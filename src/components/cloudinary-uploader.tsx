@@ -2,26 +2,26 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { Upload, X, Loader2 } from "lucide-react";
 
-interface UploaderProps {
-  onUploadComplete?: (url: string) => void;
+interface CloudinaryUploaderProps {
+  onUploadComplete?: (url: string, mediaAsset?: any) => void;
   onUploadError?: (error: string) => void;
   accept?: string;
   maxSize?: number; // in MB
-  endpoint?: string;
+  buttonText?: string;
+  className?: string;
 }
 
-export function Uploader({
+export function CloudinaryUploader({
   onUploadComplete,
   onUploadError,
-  accept = "image/*",
+  accept = "image/*,video/*,audio/*",
   maxSize = 10,
-  endpoint = "imageUploader",
-}: UploaderProps) {
+  buttonText = "Upload File",
+  className = "",
+}: CloudinaryUploaderProps) {
   const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [preview, setPreview] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,24 +48,14 @@ export function Uploader({
 
     // Upload file
     setUploading(true);
-    setProgress(0);
-
     try {
       const formData = new FormData();
       formData.append("file", file);
-
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => Math.min(prev + 10, 90));
-      }, 200);
 
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
-
-      clearInterval(progressInterval);
-      setProgress(100);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -75,7 +65,7 @@ export function Uploader({
       const data = await response.json();
       console.log("Upload successful:", data);
 
-      onUploadComplete?.(data.url);
+      onUploadComplete?.(data.url, data.mediaAsset);
     } catch (error) {
       console.error("Upload error:", error);
       const errorMessage = error instanceof Error ? error.message : "Upload failed";
@@ -83,7 +73,6 @@ export function Uploader({
       alert(errorMessage);
     } finally {
       setUploading(false);
-      setProgress(0);
     }
   };
 
@@ -92,13 +81,14 @@ export function Uploader({
   };
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${className}`}>
       <div className="flex items-center gap-4">
         <Button
           type="button"
           variant="outline"
           disabled={uploading}
-          onClick={() => document.getElementById("file-upload-input")?.click()}
+          onClick={() => document.getElementById("cloudinary-file-input")?.click()}
+          className="relative"
         >
           {uploading ? (
             <>
@@ -108,13 +98,13 @@ export function Uploader({
           ) : (
             <>
               <Upload className="mr-2 h-4 w-4" />
-              Choose File
+              {buttonText}
             </>
           )}
         </Button>
 
         <input
-          id="file-upload-input"
+          id="cloudinary-file-input"
           type="file"
           accept={accept}
           onChange={handleFileChange}
@@ -122,13 +112,6 @@ export function Uploader({
           className="hidden"
         />
       </div>
-
-      {uploading && (
-        <div className="space-y-2">
-          <Progress value={progress} className="w-full" />
-          <p className="text-sm text-muted-foreground">{progress}% uploaded</p>
-        </div>
-      )}
 
       {preview && (
         <div className="relative inline-block">
@@ -140,7 +123,7 @@ export function Uploader({
           <button
             type="button"
             onClick={clearPreview}
-            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
           >
             <X className="h-4 w-4" />
           </button>
@@ -149,6 +132,3 @@ export function Uploader({
     </div>
   );
 }
-
-// Export for backward compatibility
-export default Uploader;
