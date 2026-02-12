@@ -1,0 +1,27 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+.env
+.env.local
+.env.production.local
+.git
+.gitignore
+.next
+.nyc_output
+.vercel
+coverage
+dist
+.DS_Store
+*.tsbuildinfo
+# Keep these files for Docker build
+!prisma/
+!src/
+!public/
+!package.json
+!package-lock.json
+!next.config.js
+!tailwind.config.ts
+!tsconfig.json
+!start.sh

@@ -1,0 +1,7 @@
+@echo off
+echo Setting Railway environment variables...
+
+railway variables --set "DATABASE_URL=postgresql://postgres.lszccbdufyaohdihzult:gyP8HpDNfSTGnbvW@aws-1-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require" --set "DIRECT_URL=postgresql://postgres.lszccbdufyaohdihzult:gyP8HpDNfSTGnbvW@aws-1-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require" --set "NEXT_PUBLIC_APP_URL=https://ocean.galatide.com" --set "NEXT_PUBLIC_SUPABASE_URL=https://lszccbdufyaohdihzult.supabase.co" --set "NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzemNjYmR1Znlhb2hkaWh6dWx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzOTUxMzgsImV4cCI6MjA3NTk3MTEzOH0.1RL_7yHN-Gf7t-h0ZWIpFRqBl1wFoJ5T_-TXIPoZ534" --set "SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzemNjYmR1Znlhb2hkaWh6dWx0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDM5NTEzOCwiZXhwIjoyMDc1OTcxMTM4fQ.Kme3gHEORXbgXoJiyBmg_DtCI6QpPvPwnRwWdKxerG4" --set "RESEND_API_KEY=re_e2gchYr7_3xQXoaMH6tgNWFdG7RikBQvr" --set "RESEND_NEWSLETTER_AUDIENCE_ID=auto-generated-on-first-use" --set "CLOUDINARY_CLOUD_NAME=douh6tfzo" --set "CLOUDINARY_API_KEY=827437729188963" --set "CLOUDINARY_API_SECRET=jtOveLgGrvU7lUy5v03k_ZQeH6Y" --set "NEXTAUTH_SECRET=38d81794d04f62f6ecee44118362814d" --set "NEXTAUTH_URL=https://ocean.galatide.com" --set "NODE_ENV=production" --set "NEXT_PUBLIC_GA_ID=G-KVPJ61RZV2"
+
+echo Environment variables set successfully!
+echo Now run: railway up

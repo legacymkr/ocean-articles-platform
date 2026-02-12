@@ -1,0 +1,20 @@
+# NIXPACKS Configuration - Force Fresh Deployment
+# This overrides Railway's auto-detection completely
+
+[phases.install]
+cmds = ["npm ci --prefer-offline"]
+
+[phases.build]
+cmds = [
+  "npx prisma generate", 
+  "npx next build",
+  "ls -la .next/static/",
+  "echo 'Build completed - Next.js will serve static assets'"
+]
+
+[start]
+cmd = "node railway-server.js"
+
+[variables]
+NODE_ENV = "production"
+NIXPACKS_NO_CACHE = "1"

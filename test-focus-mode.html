@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Mode Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #ffffff;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        .control-group {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        button {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0284c7;
+        }
+        input[type="range"] {
+            width: 200px;
+            margin: 0 10px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #22c55e;
+            color: white;
+        }
+        .status.error {
+            background: #ef4444;
+            color: white;
+        }
+        .status.warning {
+            background: #f59e0b;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🌊 Astroqua Ocean - Focus Mode Test</h1>
+        <p>This page tests the key functionality that should work in the main application:</p>
+
+        <!-- Fullscreen Test -->
+        <div class="control-group">
+            <h2>📺 Fullscreen Test</h2>
+            <button onclick="toggleFullscreen()">Toggle Fullscreen</button>
+            <div id="fullscreen-status" class="status">Ready to test fullscreen</div>
+        </div>
+
+        <!-- Audio Test -->
+        <div class="control-group">
+            <h2>🎵 Ocean Sounds Test</h2>
+            <p>Make sure you have placed: <strong>1 Minute Relaxing Ocean Waves- Relaxing sounds.mp3</strong> in the <code>public</code> folder</p>
+            <button onclick="toggleAudio()">Play Ocean Sounds</button>
+            <br>
+            <label>Volume: </label>
+            <input type="range" id="volume-slider" min="0" max="100" value="30" onchange="updateVolume()">
+            <span id="volume-display">30%</span>
+            <div id="audio-status" class="status">Ready to test audio</div>
+        </div>
+
+        <!-- Font Size Test -->
+        <div class="control-group">
+            <h2>🔤 Font Size Test</h2>
+            <label>Font Size: </label>
+            <input type="range" id="font-slider" min="12" max="24" value="16" onchange="updateFontSize()">
+            <span id="font-display">16px</span>
+            <div id="font-status" class="status">Adjust font size to test</div>
+        </div>
+
+        <!-- Sample Article Content -->
+        <div class="control-group">
+            <h2>📄 Sample Article Content</h2>
+            <div id="article-content" style="line-height: 1.6;">
+                <h3>Welcome to Astroqua Ocean</h3>
+                <p>This is sample article content to test font size changes and reading experience.</p>
+                <p>In the depths of our planet's oceans lie mysteries that have captivated humanity for centuries. From bioluminescent creatures that create their own light to underwater mountain ranges taller than Everest, the ocean holds secrets that continue to amaze and inspire.</p>
+                <p>Advanced technology now allows us to explore these depths like never before, revealing ecosystems that exist in complete darkness, creatures that have evolved in ways we never imagined, and geological formations that tell the story of our planet's history.</p>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="control-group">
+            <h2>✅ Test Checklist</h2>
+            <div id="test-results">
+                <p>□ Fullscreen enters and exits properly</p>
+                <p>□ Ocean sounds play and pause correctly</p>
+                <p>□ Volume control works</p>
+                <p>□ Font size changes apply to content</p>
+                <p>□ No console errors</p>
+            </div>
+        </div>
+    </div>
+
+    <audio id="ocean-audio" loop>
+        <source src="/1 Minute Relaxing Ocean Waves- Relaxing sounds.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        let isFullscreen = false;
+        let isPlaying = false;
+        const audio = document.getElementById('ocean-audio');
+        const fullscreenStatus = document.getElementById('fullscreen-status');
+        const audioStatus = document.getElementById('audio-status');
+        const fontStatus = document.getElementById('font-status');
+
+        // Fullscreen functionality
+        async function toggleFullscreen() {
+            try {
+                if (!isFullscreen) {
+                    if (document.documentElement.requestFullscreen) {
+                        await document.documentElement.requestFullscreen();
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        await document.documentElement.webkitRequestFullscreen();
+                    } else if (document.documentElement.msRequestFullscreen) {
+                        await document.documentElement.msRequestFullscreen();
+                    }
+                    fullscreenStatus.className = 'status success';
+                    fullscreenStatus.textContent = '✅ Fullscreen activated! Press ESC or click button to exit.';
+                } else {
+                    if (document.exitFullscreen) {
+                        await document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        await document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        await document.msExitFullscreen();
+                    }
+                    fullscreenStatus.className = 'status warning';
+                    fullscreenStatus.textContent = '↩️ Exited fullscreen mode.';
+                }
+            } catch (error) {
+                fullscreenStatus.className = 'status error';
+                fullscreenStatus.textContent = '❌ Fullscreen error: ' + error.message;
+            }
+        }
+
+        // Audio functionality
+        function toggleAudio() {
+            if (!isPlaying) {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    audioStatus.className = 'status success';
+                    audioStatus.textContent = '🎵 Ocean sounds playing! Click to pause.';
+                }).catch((error) => {
+                    audioStatus.className = 'status error';
+                    audioStatus.textContent = '❌ Audio error: ' + error.message + '. Check if MP3 file exists in public folder.';
+                });
+            } else {
+                audio.pause();
+                isPlaying = false;
+                audioStatus.className = 'status warning';
+                audioStatus.textContent = '⏸️ Ocean sounds paused. Click to resume.';
+            }
+        }
+
+        function updateVolume() {
+            const volume = document.getElementById('volume-slider').value;
+            audio.volume = volume / 100;
+            document.getElementById('volume-display').textContent = volume + '%';
+        }
+
+        function updateFontSize() {
+            const fontSize = document.getElementById('font-slider').value;
+            document.getElementById('article-content').style.fontSize = fontSize + 'px';
+            document.getElementById('font-display').textContent = fontSize + 'px';
+            fontStatus.className = 'status success';
+            fontStatus.textContent = '✅ Font size updated to ' + fontSize + 'px';
+        }
+
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', () => {
+            isFullscreen = !!document.fullscreenElement;
+        });
+        document.addEventListener('webkitfullscreenchange', () => {
+            isFullscreen = !!document.webkitFullscreenElement;
+        });
+        document.addEventListener('msfullscreenchange', () => {
+            isFullscreen = !!document.msFullscreenElement;
+        });
+
+        // Initialize
+        updateVolume();
+        updateFontSize();
+    </script>
+</body>
+</html>

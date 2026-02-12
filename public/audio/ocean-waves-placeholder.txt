@@ -1,0 +1,20 @@
+Ocean Waves Audio Placeholder
+
+This file represents where the ocean waves audio file should be placed.
+
+For the Focus Mode feature to work properly, you'll need to add:
+- ocean-waves.mp3 (MP3 format)
+- ocean-waves.ogg (OGG format for better browser compatibility)
+
+The audio should be:
+- Gentle, soft ocean wave sounds
+- Loopable
+- Approximately 2-3 minutes long
+- Low volume to not distract from reading
+
+You can find free ocean wave sounds at:
+- freesound.org
+- zapsplat.com
+- pixabay.com
+
+Place the audio files directly in this directory (public/audio/) and the Focus Mode will automatically use them.

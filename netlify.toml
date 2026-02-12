@@ -1,0 +1,63 @@
+[build]
+  publish = ".next"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--production=false"
+
+[build.edge]
+  enabled = false
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "production"
+
+[context.branch-deploy.environment]
+  NODE_ENV = "production"
+
+# Handle Next.js API routes
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Handle dynamic routes
+[[redirects]]
+  from = "/:lang/articles/:slug"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/:lang/articles"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/:lang"
+  to = "/index.html"
+  status = 200
+
+# Handle admin routes
+[[redirects]]
+  from = "/admin/*"
+  to = "/index.html"
+  status = 200
+
+# Handle static assets
+[[headers]]
+  for = "/public/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

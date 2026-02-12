@@ -1,0 +1,197 @@
+Instructions
+
+Record fixes for mistakes or corrections to avoid repetition in the Lessons section.
+
+Organize thoughts and plan steps before starting a task in the Scratchpad section.
+
+Clear old tasks if necessary.
+
+Use todo markers for progress tracking:
+
+[X] Completed tasks
+
+ Pending tasks
+
+Update Scratchpad after completing subtasks.
+
+## Lessons
+
+### Translation System Implementation (Phase 8)
+- **Database vs Hardcoded Data**: Always check if database connection is available and provide fallback to prevent app crashes. Pattern: `if (!prisma) { throw new Error("Database not available"); }` with try-catch and fallback data.
+- **API Consistency**: When adding language support to APIs, use language codes (e.g., `lang=en`) instead of database IDs for better UX and URL readability.
+- **Prisma Import Path**: Use consistent import paths - created `/lib/db.ts` that exports both `db` and `prisma` for compatibility across the codebase.
+- **Method Naming**: Create specific methods for different use cases (e.g., `getArticlesWithTranslations` for public API vs `getArticles` for admin) to avoid parameter bloat.
+- **RTL Language Support**: Always include text direction (`dir="rtl"`) and language attributes (`lang="ar"`) in HTML elements for proper RTL rendering.
+- **Component Reusability**: Create flexible components that accept language-specific props rather than hardcoding language behavior.
+
+### API Design Patterns
+- **Error Handling**: Implement graceful degradation - if database fails, serve fallback data rather than failing completely.
+- **Type Safety**: Always validate input parameters and provide proper TypeScript interfaces for API responses.
+- **Null Safety**: Check for undefined database connections and handle gracefully with appropriate error messages.
+
+### UI Component Dependencies
+- **Missing Components**: When shadcn/ui components are missing (ScrollArea, Separator, Select), use alternatives: div with overflow-y-auto, border-t divs, or DropdownMenu instead.
+- **Import Strategy**: Check available components before using them to avoid build errors.
+- **Graceful Fallbacks**: Always have simpler HTML/CSS alternatives for complex UI components.
+
+## Scratchpad
+
+### ✅ COMPLETED: Phase 8 — Translation System
+**Full multi-language support implemented with:**
+- 7 languages: English, Arabic, Chinese, Russian, German, French, Hindi
+- RTL support for Arabic with proper text direction
+- Side-by-side translation editor with real-time preview
+- Language-specific URLs (/en/, /ar/, /zh/, etc.)
+- Database-connected language API with fallback support
+- SEO support for translated content
+
+### ✅ COMPLETED: Phase 9 — Polish & Performance
+**Implemented performance and UX enhancements:**
+- [X] Motion tuning: durations, easing, stagger consistency (ocean-themed animations)
+- [X] Hover/active states for buttons/links with smooth color transitions
+- [X] Lighthouse/Profiler pass; image sizes; font loading (swap); code-splitting utilities
+- [X] a11y: contrast in dark theme, focus rings, reduced motion, semantic landmarks
+
+### ✅ COMPLETED: Phase 10 — Database Setup Infrastructure
+**Database management system implemented:**
+- [X] Database setup utilities (`/src/lib/database-setup.ts`)
+- [X] Admin API endpoints for database management
+- [X] Database status dashboard with initialization tools
+- [X] Sample data seeding functionality
+
+### ✅ COMPLETED: Phase 11 — Admin Translation Management
+**Translation admin interface implemented:**
+- [X] Translation API endpoints for article management
+- [X] Article translation manager component
+- [X] Admin dashboard integration with translation buttons
+- [X] Translation status tracking and management
+
+### 🔄 CURRENT: Phase 10 — Database Connection Setup
+**Ready for database connection:**
+- [ ] Create Supabase account and project
+- [ ] Get connection string from Supabase dashboard
+- [ ] Create .env file with DATABASE_URL
+- [ ] Run npx prisma generate
+- [ ] Run npx prisma migrate dev --name init
+- [ ] Run npx prisma db seed to populate with sample data
+- [ ] Test admin dashboard with real database
+- [ ] Verify articles appear on website from database
+
+### ✅ COMPLETED: Phase 11 — Ops & Delivery
+**Deployment system implemented:**
+- [X] Env var matrix for local/preview/prod; .env.example
+- [X] Vercel deploy configuration; deployment scripts
+- [X] Prisma migrate on deploy; seed guard with environment checks
+- [X] Health check endpoints and monitoring setup
+- [X] Deployment documentation and handover guide
+- [X] Multi-language deployment considerations
+
+### 🔄 READY: Database Connection Phase
+**Next steps for going live:**
+- [ ] Create Supabase account and project
+- [ ] Get connection string from Supabase dashboard
+- [ ] Create .env file with DATABASE_URL
+- [ ] Run npx prisma generate
+- [ ] Run npx prisma migrate dev --name init
+- [ ] Run npx prisma db seed to populate with sample data
+- [ ] Test admin dashboard with real database
+- [ ] Verify articles appear on website from database
+
+Phase 12 — Bug Fix & Stability Plan
+1. Article Publishing System
+
+ Rebuild the article publishing system from scratch to ensure correct publish behavior
+
+ Fix bug: article becomes “draft” instead of “published” after creation
+
+ Fix bug: editing one article and making it public publishes a different article
+
+ Ensure “status” (draft/published) updates correctly in the database and dashboard
+
+ Verify “latest articles” section on homepage displays correct published posts
+
+ Add server-side validation for duplicate slugs and type consistency
+
+2. Multi-Language & Translation System
+
+ Implement separate language directories (/en, /ar, /es, /zh, /ru, /de, /fr, /hi)
+
+ Admin Dashboard should remain under /admin and not be affected by localization
+
+ Fix system so each published article in English shows “Add Translation” buttons for other languages
+
+ Ensure translation process opens a new editor for rewriting the article
+
+ Translate all website pages (including homepage, menus, and footer) dynamically
+
+ Verify only articles translated to the selected language appear on that version of the site
+
+ Enable full synchronization of article metadata (SEO fields, images, tags) across translations
+
+3. Focus Mode Fixes
+
+ Ensure “Focus Mode” button correctly enlarges the reading area
+
+ Add smooth zoom animation with controlled max font scaling
+
+ Add font size slider (left-right movement) with live preview
+
+ Maintain cursor in center while zooming in/out
+
+ Implement gentle ocean wave background sound activation on click
+
+ Add sound toggle (on/off) in the focus mode toolbar
+
+ Ensure smooth fade transitions when entering/exiting focus mode
+
+4. Article Editor & SEO Enhancements
+
+ Add missing heading levels (H1–H6) to the rich text editor toolbar
+
+ Fix image upload feature (both upload and image link insertion)
+
+ Add support for image alt text and captions
+
+ Integrate SEO meta fields validation (title, description, keywords, slug, canonical URL)
+
+ Ensure WYSIWYG editor generates semantic HTML compatible with Next.js rendering
+
+ Optimize editor autosave and draft preview
+
+5. Database Rebuild & Consistency
+
+ Rebuild database schema to support new multilingual system
+
+ Link Article → ArticleTranslation relations correctly with cascade delete
+
+ Ensure each translation is tied to its original English article
+
+ Add indexing for performance (slug, publishedAt, languageId)
+
+ Migrate old data safely without data loss
+
+ Validate all CRUD routes after schema rebuild
+
+6. UI & UX Consistency Fixes
+
+ Replace “Begin Journey” button with “Articles” button everywhere
+
+ Ensure navigation bar buttons (font + sound customization) work in focus mode only
+
+ Fix layout overlap bugs in responsive view (mobile/tablet)
+
+ Improve loading states for pages with shimmer or skeleton UI
+
+ Ensure all article types (VARIOUS, CLUSTER, SERIES) display correctly and load data dynamically
+
+7. Stability & Debugging
+
+ Implement detailed error logging for article publishing and translation
+
+ Add admin notifications for failed uploads or publish actions
+
+ Add retry logic for slow database or network operations
+
+ Test full flow for each language end-to-end (publish, translate, display)
+
+ Conduct full regression testing before deployment

@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String               @id @default(cuid())
+  email        String               @unique
+  name         String?
+  role         Role                 @default(EDITOR)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  translations ArticleTranslation[]
+  articles     Article[]
+  mediaAssets  MediaAsset[]
+
+  @@map("users")
+}
+
+model Language {
+  id           String               @id @default(cuid())
+  code         String               @unique
+  name         String
+  nativeName   String
+  isRTL        Boolean              @default(false)
+  isActive     Boolean              @default(true)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  translations ArticleTranslation[]
+  articles     Article[]
+
+  @@map("languages")
+}
+
+model Tag {
+  id           String           @id @default(cuid())
+  name         String           @unique
+  slug         String           @unique
+  color        String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  articles     ArticleTag[]
+  translations TagTranslation[]
+
+  @@map("tags")
+}
+
+model TagTranslation {
+  id           String   @id @default(cuid())
+  name         String
+  tagId        String
+  languageCode String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tag          Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, languageCode])
+  @@map("tag_translations")
+}
+
+model ArticleTag {
+  id        String   @id @default(cuid())
+  articleId String
+  tagId     String
+  createdAt DateTime @default(now())
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, tagId])
+  @@map("article_tags")
+}
+
+model MediaAsset {
+  id          String    @id @default(cuid())
+  url         String
+  type        MediaType
+  width       Int?
+  height      Int?
+  blurhash    String?
+  altText     String?
+  seoTitle    String?   // SEO-friendly image title
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+
+  @@map("media_assets")
+}
+
+model Article {
+  id                      String               @id @default(cuid())
+  title                   String?
+  slug                    String?
+  excerpt                 String?
+  content                 String?
+  coverUrl                String?
+  status                  ArticleStatus        @default(DRAFT)
+  publishedAt             DateTime?
+  scheduledAt             DateTime?
+  estimatedReadingMinutes Int?                 @default(5)
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+  metaTitle               String?
+  metaDescription         String?
+  keywords                String?
+  authorId                String
+  originalLanguageId      String
+  tags                    ArticleTag[]
+  translations            ArticleTranslation[]
+  author                  User                 @relation(fields: [authorId], references: [id])
+  originalLanguage        Language             @relation(fields: [originalLanguageId], references: [id])
+
+  @@unique([slug, originalLanguageId])
+  @@map("articles")
+}
+
+model ArticleTranslation {
+  id              String        @id @default(cuid())
+  title           String?
+  slug            String?
+  excerpt         String?
+  content         String?
+  status          ArticleStatus @default(DRAFT)
+  publishedAt     DateTime?
+  scheduledAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  metaTitle       String?
+  metaDescription String?
+  keywords        String?
+  articleId       String
+  languageId      String
+  translatorId    String?
+  article         Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  language        Language      @relation(fields: [languageId], references: [id])
+  translator      User?         @relation(fields: [translatorId], references: [id])
+
+  @@unique([articleId, languageId])
+  @@unique([slug, languageId])
+  @@map("article_translations")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  isActive     Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("newsletter_subscribers")
+}

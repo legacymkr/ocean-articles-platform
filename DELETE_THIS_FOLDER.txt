@@ -1,0 +1,3 @@
+This file is created to help delete the problematic sitemap-[lang].xml folder.
+The folder contains an empty route.ts file that's causing build issues.
+Please delete the entire sitemap-[lang].xml folder manually.

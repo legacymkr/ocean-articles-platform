@@ -1,0 +1,10 @@
+{
+  "title": "Complex Test Article",
+  "content": "<p>This is a <strong>complex</strong> test article with <em>formatting</em> and <u>underline</u>.</p>",
+  "excerpt": "A complex test article",
+  "status": "published",
+  "tags": ["test", "ocean", "complex"],
+  "metaTitle": "Complex Test Article - Ocean",
+  "metaDescription": "A complex test article for the ocean platform",
+  "keywords": "test, ocean, complex, article"
+}

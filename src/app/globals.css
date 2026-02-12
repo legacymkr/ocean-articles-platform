@@ -1,0 +1,754 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Space Grotesk", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  /* Deep Ocean Theme */
+  --background: #0A1A2A; /* Deep ocean blue */
+  --foreground: hsl(210, 40%, 98%); /* Clean off-white */
+  --card: rgba(10, 56, 92, 0.6); /* Semi-transparent ocean blue */
+  --card-foreground: hsl(210, 40%, 98%);
+  --popover: rgba(10, 56, 92, 0.9);
+  --popover-foreground: hsl(210, 40%, 98%);
+
+  /* Primary Accent - Ocean cyan */
+  --primary: hsl(188, 100%, 60%);
+  --primary-foreground: #0A1A2A;
+
+  /* Secondary Accent - Aqua teal */
+  --secondary: hsl(175, 85%, 50%);
+  --secondary-foreground: #0A1A2A;
+
+  --muted: rgba(60, 150, 200, 0.15);
+  --muted-foreground: rgba(248, 250, 252, 0.7);
+  --accent: hsl(175, 85%, 50%);
+  --accent-foreground: #0A1A2A;
+  --destructive: #ff6b6b;
+  --border: rgba(60, 150, 200, 0.3);
+  --input: rgba(60, 150, 200, 0.1);
+  --ring: hsl(188, 100%, 60%);
+
+  /* Chart colors for analytics */
+  --chart-1: hsl(188, 100%, 60%);
+  --chart-2: hsl(175, 85%, 50%);
+  --chart-3: hsl(200, 100%, 40%);
+  --chart-4: hsl(210, 80%, 50%);
+  --chart-5: hsl(195, 90%, 55%);
+
+  /* Sidebar */
+  --sidebar: rgba(10, 56, 92, 0.9);
+  --sidebar-foreground: hsl(210, 40%, 98%);
+  --sidebar-primary: hsl(188, 100%, 60%);
+  --sidebar-primary-foreground: #0A1A2A;
+  --sidebar-accent: hsl(175, 85%, 50%);
+  --sidebar-accent-foreground: #0A1A2A;
+  --sidebar-border: rgba(60, 150, 200, 0.3);
+  --sidebar-ring: hsl(188, 100%, 60%);
+}
+
+/* Dark theme is the default for Ocean theme */
+.dark {
+  /* Same as root - we're using deep ocean theme as default */
+  --background: #0A1A2A;
+  --foreground: hsl(210, 40%, 98%);
+  --card: rgba(10, 56, 92, 0.6);
+  --card-foreground: hsl(210, 40%, 98%);
+  --popover: rgba(10, 56, 92, 0.9);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --primary: hsl(188, 100%, 60%);
+  --primary-foreground: #0A1A2A;
+  --secondary: hsl(175, 85%, 50%);
+  --secondary-foreground: #0A1A2A;
+  --muted: rgba(60, 150, 200, 0.15);
+  --muted-foreground: rgba(248, 250, 252, 0.7);
+  --accent: hsl(175, 85%, 50%);
+  --accent-foreground: #0A1A2A;
+  --destructive: #ff6b6b;
+  --border: rgba(60, 150, 200, 0.3);
+  --input: rgba(60, 150, 200, 0.1);
+  --ring: hsl(188, 100%, 60%);
+  --chart-1: hsl(188, 100%, 60%);
+  --chart-2: hsl(175, 85%, 50%);
+  --chart-3: hsl(200, 100%, 40%);
+  --chart-4: hsl(210, 80%, 50%);
+  --chart-5: hsl(195, 90%, 55%);
+  --sidebar: rgba(10, 56, 92, 0.9);
+  --sidebar-foreground: hsl(210, 40%, 98%);
+  --sidebar-primary: hsl(188, 100%, 60%);
+  --sidebar-primary-foreground: #0A1A2A;
+  --sidebar-accent: hsl(175, 85%, 50%);
+  --sidebar-accent-foreground: #0A1A2A;
+  --sidebar-border: rgba(60, 150, 200, 0.3);
+  --sidebar-ring: hsl(188, 100%, 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Deep ocean gradient with subtle blue and teal radials */
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(10, 56, 92, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(0, 100, 150, 0.2) 0%, transparent 50%),
+      #0A1A2A;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  /* Ethereal text glow utilities for Space Grotesk headlines */
+  .text-glow-primary {
+    text-shadow:
+      0 0 10px hsl(188, 100%, 60%),
+      0 0 20px hsl(188, 100%, 60%),
+      0 0 30px hsl(188, 100%, 60%),
+      0 0 40px hsl(188, 100%, 60%);
+  }
+
+  .text-glow-secondary {
+    text-shadow:
+      0 0 10px hsl(175, 85%, 50%),
+      0 0 20px hsl(175, 85%, 50%),
+      0 0 30px hsl(175, 85%, 50%);
+  }
+
+  .text-glow-subtle {
+    text-shadow:
+      0 0 5px hsl(188, 100%, 60%),
+      0 0 10px hsl(188, 100%, 60%);
+  }
+
+  /* Floating glassy container utilities with backdrop-blur */
+  .glass-card {
+    @apply bg-card backdrop-blur-md border border-border/30;
+    background: rgba(10, 56, 92, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .glass-card:hover {
+    @apply border-primary/50;
+    background: rgba(10, 56, 92, 0.8);
+    box-shadow: 0 0 20px hsl(188, 100%, 60%, 0.3);
+  }
+
+  /* Floating animation for UI elements */
+  .animate-float-up {
+    animation: floatUp 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  @keyframes floatUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Cosmic Drift - floating elements animation with sophisticated movement and fading */
+  @keyframes cosmic-float {
+    0% {
+      transform: translateY(0) translateX(0);
+      opacity: 0;
+    }
+    5% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 0.4;
+    }
+    95% {
+      opacity: 0.4;
+    }
+    100% {
+      transform: translateY(-110vh) translateX(var(--horizontal-drift));
+      opacity: 0;
+    }
+  }
+
+  .animate-cosmic-float {
+    animation: cosmic-float linear infinite;
+  }
+
+  /* Ripple effect for buttons */
+  .ripple-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple-effect::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(60, 168, 193, 0.3);
+    transform: translate(-50%, -50%);
+    transition:
+      width 0.6s,
+      height 0.6s;
+  }
+
+  .ripple-effect:active::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  /* Font utilities */
+  .font-heading {
+    font-family: var(--font-space-grotesk);
+  }
+
+  .font-body {
+    font-family: var(--font-inter);
+  }
+
+  /* Article Content Styles */
+  .prose h2 {
+    @apply text-2xl font-bold mt-12 mb-6;
+    font-family: var(--font-space-grotesk);
+    text-shadow: 0 0 20px hsl(var(--secondary) / 0.5);
+  }
+
+  .prose h3 {
+    @apply text-xl font-semibold mt-8 mb-4;
+    font-family: var(--font-space-grotesk);
+    text-shadow: 0 0 15px hsl(var(--accent) / 0.3);
+  }
+
+  /* ========================================
+     HEADING STYLES - CRITICAL FIX
+     Ensure headings render correctly in published articles
+     Normal styling without cyan glow (cyan reserved for main pages)
+     ======================================== */
+
+  .prose h1,
+  .article-content h1 {
+    font-size: 2.25rem !important;
+    font-weight: 800 !important;
+    margin: 1.5rem 0 1rem 0 !important;
+    line-height: 1.2 !important;
+    font-family: var(--font-space-grotesk) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .prose h2,
+  .article-content h2 {
+    font-size: 1.875rem !important;
+    font-weight: 700 !important;
+    margin: 1.25rem 0 0.75rem 0 !important;
+    line-height: 1.3 !important;
+    font-family: var(--font-space-grotesk) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .prose h3,
+  .article-content h3 {
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    margin: 1rem 0 0.5rem 0 !important;
+    line-height: 1.4 !important;
+    font-family: var(--font-space-grotesk) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .prose h4,
+  .article-content h4 {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    margin: 0.875rem 0 0.5rem 0 !important;
+    line-height: 1.4 !important;
+    font-family: var(--font-space-grotesk) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .prose h5,
+  .article-content h5 {
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    margin: 0.75rem 0 0.5rem 0 !important;
+    line-height: 1.5 !important;
+    font-family: var(--font-space-grotesk) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .prose h6,
+  .article-content h6 {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    margin: 0.5rem 0 0.5rem 0 !important;
+    line-height: 1.5 !important;
+    font-family: var(--font-space-grotesk) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .prose p {
+    @apply mb-6 text-foreground leading-relaxed;
+    font-family: var(--font-inter);
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-primary/50 pl-6 py-4 my-8 bg-card/30 rounded-r-lg;
+  }
+
+  .prose .pull-quote {
+    @apply text-xl italic border-l-4 border-primary pl-6 py-6 my-12 bg-gradient-to-r from-primary/5 to-transparent rounded-r-lg;
+    font-family: var(--font-inter);
+    text-shadow: 0 0 15px hsl(var(--accent) / 0.3);
+  }
+
+  .prose .pull-quote cite {
+    @apply block text-sm text-muted-foreground mt-4 not-italic;
+  }
+
+  .prose ul,
+  .prose ol {
+    @apply mb-6 pl-6;
+  }
+
+  .prose li {
+    @apply mb-2 text-foreground;
+  }
+
+  .prose strong {
+    @apply font-semibold;
+    text-shadow: 0 0 10px hsl(var(--accent) / 0.3);
+  }
+
+  .prose a {
+    @apply text-primary transition-colors;
+  }
+
+  .prose a:hover {
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.8);
+  }
+
+  /* ========================================
+     HIGHLIGHTER STYLES WITH GLOW EFFECT
+     Applied to published articles to match editor
+     ======================================== */
+  
+  .prose mark,
+  .article-content mark,
+  mark {
+    background-color: rgba(255, 255, 0, 0.3) !important;
+    color: hsl(var(--foreground)) !important;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    box-shadow: 
+      0 0 10px rgba(255, 255, 0, 0.5),
+      0 0 20px rgba(255, 255, 0, 0.3),
+      0 0 30px rgba(255, 255, 0, 0.1) !important;
+    text-shadow: 0 0 5px rgba(255, 255, 0, 0.5) !important;
+  }
+
+  /* Multiple highlight colors support */
+  .prose mark[data-color="yellow"],
+  .article-content mark[data-color="yellow"] {
+    background-color: rgba(255, 255, 0, 0.3) !important;
+    box-shadow: 
+      0 0 10px rgba(255, 255, 0, 0.5),
+      0 0 20px rgba(255, 255, 0, 0.3) !important;
+  }
+
+  .prose mark[data-color="green"],
+  .article-content mark[data-color="green"] {
+    background-color: rgba(0, 255, 0, 0.3) !important;
+    box-shadow: 
+      0 0 10px rgba(0, 255, 0, 0.5),
+      0 0 20px rgba(0, 255, 0, 0.3) !important;
+  }
+
+  .prose mark[data-color="pink"],
+  .article-content mark[data-color="pink"] {
+    background-color: rgba(255, 0, 255, 0.3) !important;
+    box-shadow: 
+      0 0 10px rgba(255, 0, 255, 0.5),
+      0 0 20px rgba(255, 0, 255, 0.3) !important;
+  }
+
+  .prose mark[data-color="blue"],
+  .article-content mark[data-color="blue"] {
+    background-color: rgba(0, 191, 255, 0.3) !important;
+    box-shadow: 
+      0 0 10px rgba(0, 191, 255, 0.5),
+      0 0 20px rgba(0, 191, 255, 0.3) !important;
+  }
+
+  /* ========================================
+     ASTROQUA ANIMATION SYSTEM
+     ======================================== */
+  
+  /* Custom Easing Functions */
+  .ease-wave { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+  .ease-surge { transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  .ease-tide { transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1); }
+  .ease-current { transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+  .ease-depth { transition-timing-function: cubic-bezier(0.77, 0, 0.175, 1); }
+  .ease-spring { transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .ease-soft { transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1); }
+
+  /* Glow Effects */
+  .shadow-glow {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3), 0 0 40px hsl(var(--primary) / 0.1);
+  }
+  
+  .shadow-glow-primary {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2), 0 0 20px hsl(var(--primary) / 0.3);
+  }
+
+  /* Ripple Effect for Interactive Elements */
+  .ripple-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .ripple-effect::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.3;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease-current, height 0.6s ease-current;
+  }
+  
+  .ripple-effect:active::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  /* Breathing Animation for Loading States */
+  @keyframes breathe {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+  }
+  
+  .animate-breathe {
+    animation: breathe 2s ease-tide infinite;
+  }
+
+  /* Floating Animation for Background Elements */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-10px) rotate(1deg); }
+    66% { transform: translateY(5px) rotate(-1deg); }
+  }
+  
+  .animate-float {
+    animation: float 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  /* Pulse Glow Animation */
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px hsl(var(--primary) / 0.3); }
+    50% { box-shadow: 0 0 20px hsl(var(--primary) / 0.6), 0 0 30px hsl(var(--primary) / 0.3); }
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-tide infinite;
+  }
+
+  /* Stagger Animation Delays */
+  .stagger-1 { animation-delay: 50ms; }
+  .stagger-2 { animation-delay: 100ms; }
+  .stagger-3 { animation-delay: 150ms; }
+  .stagger-4 { animation-delay: 200ms; }
+  .stagger-5 { animation-delay: 250ms; }
+  .stagger-6 { animation-delay: 300ms; }
+
+  /* Focus Styles with Better Visibility */
+  .focus-visible:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Improved Button States */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:brightness-125 active:scale-95;
+    @apply transition-all duration-150 ease-in-out;
+    @apply focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+    @apply motion-safe:transform motion-safe:transition-transform;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:shadow-lg hover:shadow-secondary/20 active:scale-95;
+    @apply transition-all duration-150 ease-in-out;
+    @apply focus:ring-2 focus:ring-secondary focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  /* Enhanced Card Interactions */
+  .card-interactive {
+    @apply transition-all duration-300 ease-in-out;
+    @apply hover:scale-105 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1;
+    @apply motion-safe:hover:scale-105 motion-safe:hover:-translate-y-1;
+  }
+
+  /* Smooth Loading States */
+  .loading-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-soft infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Reduced Motion Preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    
+    .animate-breathe,
+    .animate-float,
+    .animate-pulse-glow {
+      animation: none;
+    }
+  }
+
+  /* Neon Highlight Styles for Rich Text Editor */
+  .ProseMirror mark[data-color="rgba(0, 255, 255, 0.4)"] {
+    background-color: rgba(0, 255, 255, 0.4);
+    color: #000;
+    padding: 2px 4px;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+    animation: neon-glow-cyan 2s ease-in-out infinite alternate;
+  }
+
+  .ProseMirror mark[data-color="rgba(255, 255, 0, 0.4)"] {
+    background-color: rgba(255, 255, 0, 0.4);
+    color: #000;
+    padding: 2px 4px;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(255, 255, 0, 0.6);
+    animation: neon-glow-yellow 2s ease-in-out infinite alternate;
+  }
+
+  .ProseMirror mark[data-color="rgba(255, 0, 255, 0.4)"] {
+    background-color: rgba(255, 0, 255, 0.4);
+    color: #000;
+    padding: 2px 4px;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
+    animation: neon-glow-magenta 2s ease-in-out infinite alternate;
+  }
+
+  .ProseMirror mark[data-color="rgba(0, 255, 0, 0.4)"] {
+    background-color: rgba(0, 255, 0, 0.4);
+    color: #000;
+    padding: 2px 4px;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
+    animation: neon-glow-green 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes neon-glow-cyan {
+    from {
+      box-shadow: 0 0 5px rgba(0, 255, 255, 0.4), 0 0 10px rgba(0, 255, 255, 0.3);
+    }
+    to {
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.6);
+    }
+  }
+
+  @keyframes neon-glow-yellow {
+    from {
+      box-shadow: 0 0 5px rgba(255, 255, 0, 0.4), 0 0 10px rgba(255, 255, 0, 0.3);
+    }
+    to {
+      box-shadow: 0 0 10px rgba(255, 255, 0, 0.8), 0 0 20px rgba(255, 255, 0, 0.6);
+    }
+  }
+
+  @keyframes neon-glow-magenta {
+    from {
+      box-shadow: 0 0 5px rgba(255, 0, 255, 0.4), 0 0 10px rgba(255, 0, 255, 0.3);
+    }
+    to {
+      box-shadow: 0 0 10px rgba(255, 0, 255, 0.8), 0 0 20px rgba(255, 0, 255, 0.6);
+    }
+  }
+
+  @keyframes neon-glow-green {
+    from {
+      box-shadow: 0 0 5px rgba(0, 255, 0, 0.4), 0 0 10px rgba(0, 255, 0, 0.3);
+    }
+    to {
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.8), 0 0 20px rgba(0, 255, 0, 0.6);
+    }
+  }
+
+  /* High Contrast Mode Support */
+  @media (prefers-contrast: high) {
+    .shadow-glow,
+    .shadow-glow-primary {
+      box-shadow: none;
+      border: 2px solid currentColor;
+    }
+    
+    /* Disable neon effects in high contrast mode */
+    .ProseMirror mark {
+      animation: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  /* ========================================
+     TABLE STYLING - FOR PUBLISHED CONTENT
+     ======================================== */
+
+  /* Base table styling - applies to all tables */
+  .prose table,
+  .article-content table,
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.5rem 0;
+    background-color: rgba(10, 56, 92, 0.4);
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    border-radius: 0.5rem;
+  }
+
+  /* Table header cells - Ocean gradient */
+  .prose table th,
+  .article-content table th,
+  table th {
+    background: linear-gradient(135deg, 
+      rgba(0, 255, 255, 0.2) 0%, 
+      rgba(0, 100, 150, 0.2) 100%);
+    border: 2px solid rgba(0, 255, 255, 0.4);
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    font-family: var(--font-space-grotesk);
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+    color: hsl(var(--primary));
+    text-align: left;
+    vertical-align: top;
+  }
+
+  /* Table data cells */
+  .prose table td,
+  .article-content table td,
+  table td {
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    padding: 0.75rem 1rem;
+    background-color: rgba(10, 25, 47, 0.3);
+    vertical-align: top;
+    color: rgba(248, 250, 252, 0.9);
+  }
+
+  /* Table row hover effect */
+  .prose table tbody tr:hover,
+  .article-content table tbody tr:hover,
+  table tbody tr:hover {
+    background-color: rgba(0, 255, 255, 0.05);
+    transition: background-color 0.2s ease-in-out;
+  }
+
+  /* Table header row - extra glow */
+  .prose table thead tr,
+  .article-content table thead tr,
+  table thead tr {
+    box-shadow: 0 2px 8px rgba(0, 255, 255, 0.2);
+  }
+
+  /* Ensure text is visible in tables */
+  .prose table,
+  .article-content table,
+  table {
+    color: hsl(var(--foreground));
+  }
+
+  /* Responsive tables for mobile */
+  @media (max-width: 768px) {
+    .prose table,
+    .article-content table,
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .prose table td,
+    .prose table th,
+    .article-content table td,
+    .article-content table th,
+    table td,
+    table th {
+      min-width: 120px;
+    }
+  }
+}
