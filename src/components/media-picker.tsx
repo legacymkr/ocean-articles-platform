@@ -25,7 +25,7 @@ import {
   SortDesc,
   X
 } from "lucide-react";
-import { useUploadThing } from "@/lib/uploadthing-client";
+// Removed UploadThing import - now using Cloudinary
 import { MediaType } from "@prisma/client";
 import { toast } from "sonner";
 import { ImageOptimizationService } from "@/lib/services/image-optimization";
@@ -108,101 +108,23 @@ export function MediaPicker({
     sortOrder: 'desc'
   });
 
-  const { startUpload } = useUploadThing("mediaUploader", {
-    onClientUploadComplete: async (res) => {
-      console.log("Files uploaded:", res);
-      if (res && res[0]) {
-        const uploadedFile = res[0];
+  // Cloudinary upload function
+  const uploadToCloudinary = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
 
-        // Get current user for saving media asset
-        try {
-          const userResponse = await fetch('/api/admin/current-user');
-          const userData = await userResponse.json();
-          const currentUser = userData.user;
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
 
-          // Update the media asset with alt text and SEO title if provided
-          if (uploadedFile.serverData?.mediaAsset?.id && (altText || seoTitle)) {
-            try {
-              await fetch(`/api/media/${uploadedFile.serverData.mediaAsset.id}`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  altText: altText || undefined,
-                  seoTitle: seoTitle || undefined
-                })
-              });
-            } catch (updateError) {
-              console.error('Error updating media metadata:', updateError);
-            }
-          }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Upload failed");
+    }
 
-          // Media asset should already be saved by UploadThing onUploadComplete
-          // Just refresh the media list to show the new upload
-          await fetchMedia();
-
-          // If single selection and auto-select is desired
-          if (maxSelection === 1) {
-            // Find the newly uploaded item and select it
-            const updatedItems = await fetchMediaAndReturn();
-            const newItem = updatedItems.find(item => item.url === uploadedFile.url);
-            if (newItem) {
-              onSelect(newItem);
-              setOpen(false);
-            }
-          }
-
-          // Clear the form fields
-          setAltText("");
-          setSeoTitle("");
-          toast.success('Media uploaded successfully!');
-        } catch (error) {
-          console.error('Error saving media asset:', error);
-          toast.error(`Error saving media asset: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      }
-      setUploading(false);
-    },
-    onUploadError: (error: Error) => {
-      console.error("Upload error:", error);
-
-      // Determine error type and provide specific feedback
-      let errorMessage = 'Upload failed';
-      let canRetry = true;
-
-      if (error.message.includes('File too large')) {
-        errorMessage = 'File size exceeds the maximum limit';
-        canRetry = false;
-      } else if (error.message.includes('Invalid file type')) {
-        errorMessage = 'File type not supported';
-        canRetry = false;
-      } else if (error.message.includes('Network')) {
-        errorMessage = 'Network error - please check your connection';
-      } else if (error.message.includes('timeout')) {
-        errorMessage = 'Upload timed out - please try again';
-      } else {
-        errorMessage = `Upload failed: ${error.message}`;
-      }
-
-      toast.error(errorMessage);
-      setUploading(false);
-
-      // Store error for potential retry
-      if (canRetry) {
-        setUploadErrors(prev => ({
-          ...prev,
-          'current': errorMessage
-        }));
-      }
-    },
-    onUploadProgress: (progress) => {
-      setUploadProgress(prev => ({
-        ...prev,
-        'current': progress
-      }));
-    },
-  });
+    return await response.json();
+  };
 
   // Fetch media from database
   useEffect(() => {
@@ -402,7 +324,7 @@ export function MediaPicker({
 
   const retryUpload = async (files: File[], attemptNumber: number = 1) => {
     const maxRetries = 3;
-    const backoffDelay = Math.min(1000 * Math.pow(2, attemptNumber - 1), 10000); // Exponential backoff, max 10s
+    const backoffDelay = Math.min(1000 * Math.pow(2, attemptNumber - 1), 10000);
 
     try {
       if (attemptNumber > 1) {
@@ -410,7 +332,55 @@ export function MediaPicker({
         await new Promise(resolve => setTimeout(resolve, backoffDelay));
       }
 
-      startUpload(files);
+      // Upload each file to Cloudinary
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setUploadProgress(prev => ({
+          ...prev,
+          'current': Math.round((i / files.length) * 100)
+        }));
+
+        const result = await uploadToCloudinary(file);
+        
+        // Update media asset with alt text and SEO title if provided
+        if (result.mediaAsset?.id && (altText || seoTitle)) {
+          try {
+            await fetch(`/api/media/${result.mediaAsset.id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                altText: altText || undefined,
+                seoTitle: seoTitle || undefined
+              })
+            });
+          } catch (updateError) {
+            console.error('Error updating media metadata:', updateError);
+          }
+        }
+      }
+
+      setUploadProgress(prev => ({ ...prev, 'current': 100 }));
+
+      // Refresh media list
+      await fetchMedia();
+
+      // If single selection, auto-select the uploaded item
+      if (maxSelection === 1 && files.length === 1) {
+        const updatedItems = await fetchMediaAndReturn();
+        const newItem = updatedItems[0];
+        if (newItem) {
+          onSelect(newItem);
+          setOpen(false);
+        }
+      }
+
+      // Clear form fields
+      setAltText("");
+      setSeoTitle("");
+      toast.success('Media uploaded successfully!');
+      setUploading(false);
     } catch (error) {
       console.error(`Upload attempt ${attemptNumber} failed:`, error);
 
