@@ -109,9 +109,15 @@ export function MediaPicker({
   });
 
   // Cloudinary upload function
-  const uploadToCloudinary = async (file: File) => {
+  const uploadToCloudinary = async (file: File, metadata?: { altText?: string; seoTitle?: string }) => {
     const formData = new FormData();
     formData.append("file", file);
+    if (metadata?.altText) {
+      formData.append("altText", metadata.altText);
+    }
+    if (metadata?.seoTitle) {
+      formData.append("seoTitle", metadata.seoTitle);
+    }
 
     const response = await fetch("/api/upload", {
       method: "POST",
@@ -332,7 +338,7 @@ export function MediaPicker({
         await new Promise(resolve => setTimeout(resolve, backoffDelay));
       }
 
-      // Upload each file to Cloudinary
+      // Upload each file to Cloudinary with metadata
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         setUploadProgress(prev => ({
@@ -340,25 +346,12 @@ export function MediaPicker({
           'current': Math.round((i / files.length) * 100)
         }));
 
-        const result = await uploadToCloudinary(file);
+        const result = await uploadToCloudinary(file, {
+          altText: altText || undefined,
+          seoTitle: seoTitle || undefined
+        });
         
-        // Update media asset with alt text and SEO title if provided
-        if (result.mediaAsset?.id && (altText || seoTitle)) {
-          try {
-            await fetch(`/api/media/${result.mediaAsset.id}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                altText: altText || undefined,
-                seoTitle: seoTitle || undefined
-              })
-            });
-          } catch (updateError) {
-            console.error('Error updating media metadata:', updateError);
-          }
-        }
+        console.log('Upload result:', result);
       }
 
       setUploadProgress(prev => ({ ...prev, 'current': 100 }));

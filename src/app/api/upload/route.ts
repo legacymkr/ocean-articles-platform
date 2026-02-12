@@ -58,6 +58,8 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
+    const altText = formData.get("altText") as string | null;
+    const seoTitle = formData.get("seoTitle") as string | null;
 
     if (!file) {
       return NextResponse.json(
@@ -96,8 +98,8 @@ export async function POST(request: NextRequest) {
           data: {
             url: uploadResponse.secure_url,
             type: mediaType,
-            altText: file.name || `Uploaded ${mediaType.toLowerCase()}`,
-            seoTitle: file.name || `Uploaded ${mediaType.toLowerCase()}`,
+            altText: altText || file.name || `Uploaded ${mediaType.toLowerCase()}`,
+            seoTitle: seoTitle || file.name || `Uploaded ${mediaType.toLowerCase()}`,
             createdById: adminUser.id,
           },
         });

@@ -11,6 +11,8 @@ interface CloudinaryUploaderProps {
   maxSize?: number; // in MB
   buttonText?: string;
   className?: string;
+  altText?: string;
+  seoTitle?: string;
 }
 
 export function CloudinaryUploader({
@@ -20,6 +22,8 @@ export function CloudinaryUploader({
   maxSize = 10,
   buttonText = "Upload File",
   className = "",
+  altText,
+  seoTitle,
 }: CloudinaryUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
@@ -51,6 +55,12 @@ export function CloudinaryUploader({
     try {
       const formData = new FormData();
       formData.append("file", file);
+      if (altText) {
+        formData.append("altText", altText);
+      }
+      if (seoTitle) {
+        formData.append("seoTitle", seoTitle);
+      }
 
       const response = await fetch("/api/upload", {
         method: "POST",
