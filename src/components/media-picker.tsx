@@ -339,6 +339,7 @@ export function MediaPicker({
       }
 
       // Upload each file to Cloudinary with metadata
+      const uploadedAssets: any[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         setUploadProgress(prev => ({
@@ -352,6 +353,10 @@ export function MediaPicker({
         });
         
         console.log('Upload result:', result);
+        
+        if (result.mediaAsset) {
+          uploadedAssets.push(result.mediaAsset);
+        }
       }
 
       setUploadProgress(prev => ({ ...prev, 'current': 100 }));
@@ -360,9 +365,8 @@ export function MediaPicker({
       await fetchMedia();
 
       // If single selection, auto-select the uploaded item
-      if (maxSelection === 1 && files.length === 1) {
-        const updatedItems = await fetchMediaAndReturn();
-        const newItem = updatedItems[0];
+      if (maxSelection === 1 && uploadedAssets.length === 1) {
+        const newItem = uploadedAssets[0];
         if (newItem) {
           onSelect(newItem);
           setOpen(false);

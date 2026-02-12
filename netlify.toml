@@ -9,6 +9,10 @@
 [build.edge]
   enabled = false
 
+# Disable Netlify plugin to avoid symlink issues on Windows
+[plugins]
+  disabled = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

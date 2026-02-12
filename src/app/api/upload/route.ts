@@ -102,6 +102,15 @@ export async function POST(request: NextRequest) {
             seoTitle: seoTitle || file.name || `Uploaded ${mediaType.toLowerCase()}`,
             createdById: adminUser.id,
           },
+          include: {
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          }
         });
 
         console.log("Media asset saved to database:", mediaAsset.id);
@@ -119,6 +128,12 @@ export async function POST(request: NextRequest) {
         id: mediaAsset.id,
         url: mediaAsset.url,
         type: mediaAsset.type,
+        altText: mediaAsset.altText,
+        seoTitle: mediaAsset.seoTitle,
+        width: mediaAsset.width,
+        height: mediaAsset.height,
+        createdAt: mediaAsset.createdAt,
+        createdBy: mediaAsset.createdBy,
       } : null,
     });
   } catch (error) {
