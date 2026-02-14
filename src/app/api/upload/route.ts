@@ -119,6 +119,8 @@ export async function POST(request: NextRequest) {
         id: mediaAsset.id,
         url: mediaAsset.url,
         type: mediaAsset.type,
+        altText: mediaAsset.altText,
+        seoTitle: mediaAsset.seoTitle,
       } : null,
     });
   } catch (error) {

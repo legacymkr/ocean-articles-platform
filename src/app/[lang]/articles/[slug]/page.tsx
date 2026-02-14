@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { prisma } from "@/lib/db";
+import { db, prisma } from "@/lib/db";
 import { ArticlePageClient } from "./article-page-client";
 
 interface ArticleData {
@@ -124,6 +124,18 @@ export async function generateMetadata({
   const description = translation?.metaDescription || translation?.excerpt || article.metaDescription || article.excerpt || "Explore the mysteries of the ocean depths";
   const keywords = translation?.keywords || article.keywords || undefined;
 
+  const coverImageMetadata = article.coverUrl && db
+    ? await db.mediaAsset.findFirst({
+        where: { url: article.coverUrl },
+        select: { altText: true, seoTitle: true },
+      })
+    : null;
+
+  const imageAltText =
+    coverImageMetadata?.altText ||
+    coverImageMetadata?.seoTitle ||
+    title;
+
   return {
     title: title,
     description: description,
@@ -134,13 +146,23 @@ export async function generateMetadata({
       type: "article",
       publishedTime: article.publishedAt?.toISOString(),
       authors: [article.author?.name || "Galatide Team"],
-      images: article.coverUrl ? [article.coverUrl] : undefined,
+      images: article.coverUrl
+        ? [{
+            url: article.coverUrl,
+            alt: imageAltText,
+          }]
+        : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: title,
       description: description,
-      images: article.coverUrl ? [article.coverUrl] : undefined,
+      images: article.coverUrl
+        ? [{
+            url: article.coverUrl,
+            alt: imageAltText,
+          }]
+        : undefined,
     },
   };
 }
