@@ -6,12 +6,15 @@
  * Generate a URL-friendly slug from a string
  */
 export function generateSlug(text: string): string {
-  return text
+  const slug = text
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, "") // Remove special characters
     .replace(/[\s_-]+/g, "-") // Replace spaces and underscores with hyphens
     .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+
+  // Fall back to a safe default when the input doesn't contain slug-friendly characters.
+  return slug || "untitled";
 }
 
 /**
@@ -21,12 +24,13 @@ export async function generateUniqueSlug(
   baseSlug: string,
   existingSlugs: string[],
 ): Promise<string> {
-  let slug = baseSlug;
+  const normalizedBaseSlug = baseSlug.trim() || "untitled";
+  let slug = normalizedBaseSlug;
   let counter = 1;
 
   // Check if slug exists for this language
   while (existingSlugs.includes(slug)) {
-    slug = `${baseSlug}-${counter}`;
+    slug = `${normalizedBaseSlug}-${counter}`;
     counter++;
   }
 

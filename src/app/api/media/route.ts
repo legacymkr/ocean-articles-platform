@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
           const dataQuery = `
             SELECT 
               m.id, m.url, m.type, m.width, m.height, 
-              m.blurhash, m."altText", m."createdAt", m."updatedAt", 
+              m.blurhash, m."altText", m."seoTitle", m."createdAt", m."updatedAt", 
               m."createdById",
               u.id as "user_id", u.name as "user_name", u.email as "user_email"
             FROM media_assets m
@@ -179,6 +179,7 @@ export async function GET(request: NextRequest) {
             height: m.height,
             blurhash: m.blurhash,
             altText: m.altText,
+            seoTitle: m.seoTitle,
             createdAt: m.createdAt,
             updatedAt: m.updatedAt,
             createdById: m.createdById,
