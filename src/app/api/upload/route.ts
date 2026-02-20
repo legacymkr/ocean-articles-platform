@@ -41,12 +41,12 @@ async function getCurrentAdminUser() {
 }
 
 // Helper function to detect media type
-function detectMediaType(resourceType: string, format: string): MediaType {
+function detectMediaType(resourceType: string, format?: string): MediaType {
   if (resourceType === "image") return MediaType.IMAGE;
   if (resourceType === "video") return MediaType.VIDEO;
   if (resourceType === "raw") {
     const audioFormats = ["mp3", "wav", "ogg", "aac", "flac", "m4a"];
-    if (audioFormats.includes(format.toLowerCase())) {
+    if (format && audioFormats.includes(format.toLowerCase())) {
       return MediaType.AUDIO;
     }
     return MediaType.DOCUMENT;
