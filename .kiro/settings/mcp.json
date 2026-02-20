@@ -10,7 +10,11 @@
         "new_page",
         "take_snapshot",
         "click",
-        "navigate_page"
+        "navigate_page",
+        "list_network_requests",
+        "get_network_request",
+        "list_console_messages",
+        "upload_file"
       ]
     }
   }
