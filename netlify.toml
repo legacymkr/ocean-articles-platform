@@ -1,17 +1,10 @@
 [build]
   publish = ".next"
-  command = "npm run build"
+  command = "npm run netlify-build"
 
 [build.environment]
   NODE_VERSION = "18"
   NPM_FLAGS = "--production=false"
-
-[build.edge]
-  enabled = false
-
-# Disable Netlify plugin to avoid symlink issues on Windows
-[plugins]
-  disabled = true
 
 [[redirects]]
   from = "/*"

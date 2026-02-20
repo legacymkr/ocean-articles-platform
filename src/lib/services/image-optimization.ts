@@ -70,8 +70,12 @@ export class ImageOptimizationService {
       const img = new Image();
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
+      const blobUrl = URL.createObjectURL(file);
       
       img.onload = () => {
+        // Revoke blob URL immediately after loading
+        URL.revokeObjectURL(blobUrl);
+        
         const suggestions: string[] = [];
         let needsOptimization = false;
         let estimatedSavings = 0;
@@ -110,13 +114,16 @@ export class ImageOptimizationService {
       };
 
       img.onerror = () => {
+        // Revoke blob URL on error too
+        URL.revokeObjectURL(blobUrl);
+        
         resolve({
           needsOptimization: false,
           suggestions: ['Unable to analyze image.']
         });
       };
 
-      img.src = URL.createObjectURL(file);
+      img.src = blobUrl;
     });
   }
 
@@ -157,8 +164,12 @@ export class ImageOptimizationService {
       const img = new Image();
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
+      const blobUrl = URL.createObjectURL(file);
       
       img.onload = () => {
+        // Revoke blob URL immediately after loading
+        URL.revokeObjectURL(blobUrl);
+        
         if (this.hasTransparency(img, canvas, ctx)) {
           resolve('webp'); // WebP supports transparency and good compression
         } else if (file.type.includes('photo') || file.name.toLowerCase().includes('photo')) {
@@ -169,10 +180,12 @@ export class ImageOptimizationService {
       };
 
       img.onerror = () => {
+        // Revoke blob URL on error too
+        URL.revokeObjectURL(blobUrl);
         resolve('jpeg'); // Fallback
       };
 
-      img.src = URL.createObjectURL(file);
+      img.src = blobUrl;
     });
   }
 
@@ -196,13 +209,18 @@ export class ImageOptimizationService {
       const img = new Image();
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
+      const blobUrl = URL.createObjectURL(file);
 
       if (!ctx) {
+        URL.revokeObjectURL(blobUrl);
         reject(new Error('Canvas context not available'));
         return;
       }
 
       img.onload = () => {
+        // Revoke blob URL immediately after loading
+        URL.revokeObjectURL(blobUrl);
+        
         // Calculate new dimensions
         let { width, height } = img;
         
@@ -245,10 +263,12 @@ export class ImageOptimizationService {
       };
 
       img.onerror = () => {
+        // Revoke blob URL on error too
+        URL.revokeObjectURL(blobUrl);
         reject(new Error('Failed to load image'));
       };
 
-      img.src = URL.createObjectURL(file);
+      img.src = blobUrl;
     });
   }
 
@@ -260,13 +280,18 @@ export class ImageOptimizationService {
       const img = new Image();
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
+      const blobUrl = URL.createObjectURL(file);
 
       if (!ctx) {
+        URL.revokeObjectURL(blobUrl);
         reject(new Error('Canvas context not available'));
         return;
       }
 
       img.onload = () => {
+        // Revoke blob URL immediately after loading
+        URL.revokeObjectURL(blobUrl);
+        
         // Create tiny version
         const ratio = Math.min(size / img.width, size / img.height);
         canvas.width = img.width * ratio;
@@ -280,10 +305,12 @@ export class ImageOptimizationService {
       };
 
       img.onerror = () => {
+        // Revoke blob URL on error too
+        URL.revokeObjectURL(blobUrl);
         reject(new Error('Failed to generate placeholder'));
       };
 
-      img.src = URL.createObjectURL(file);
+      img.src = blobUrl;
     });
   }
 

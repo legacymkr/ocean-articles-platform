@@ -85,57 +85,79 @@ export async function POST(request: NextRequest) {
     // Get admin user
     const adminUser = await getCurrentAdminUser();
 
-    // Save to database
-    let mediaAsset = null;
-    if (db) {
-      try {
-        const mediaType = detectMediaType(
-          uploadResponse.resource_type,
-          uploadResponse.format
-        );
-
-        mediaAsset = await db.mediaAsset.create({
-          data: {
-            url: uploadResponse.secure_url,
-            type: mediaType,
-            altText: altText || file.name || `Uploaded ${mediaType.toLowerCase()}`,
-            seoTitle: seoTitle || file.name || `Uploaded ${mediaType.toLowerCase()}`,
-            createdById: adminUser.id,
-          },
-          include: {
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-                email: true
-              }
-            }
-          }
-        });
-
-        console.log("Media asset saved to database:", mediaAsset.id);
-      } catch (dbError) {
-        console.error("Error saving to database:", dbError);
-        // Continue even if database save fails
-      }
+    // Save to database - MANDATORY, fail if this fails
+    if (!db) {
+      return NextResponse.json(
+        { 
+          error: "Database not available",
+          details: "Cannot save media asset without database connection"
+        },
+        { status: 503 }
+      );
     }
 
-    return NextResponse.json({
-      success: true,
-      url: uploadResponse.secure_url,
-      publicId: uploadResponse.public_id,
-      mediaAsset: mediaAsset ? {
-        id: mediaAsset.id,
-        url: mediaAsset.url,
-        type: mediaAsset.type,
-        altText: mediaAsset.altText,
-        seoTitle: mediaAsset.seoTitle,
-        width: mediaAsset.width,
-        height: mediaAsset.height,
-        createdAt: mediaAsset.createdAt,
-        createdBy: mediaAsset.createdBy,
-      } : null,
-    });
+    try {
+      const mediaType = detectMediaType(
+        uploadResponse.resource_type,
+        uploadResponse.format
+      );
+
+      const mediaAsset = await db.mediaAsset.create({
+        data: {
+          url: uploadResponse.secure_url,
+          type: mediaType,
+          altText: altText || file.name || `Uploaded ${mediaType.toLowerCase()}`,
+          seoTitle: seoTitle || file.name || `Uploaded ${mediaType.toLowerCase()}`,
+          createdById: adminUser.id,
+        },
+        include: {
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        }
+      });
+
+      console.log("Media asset saved to database:", mediaAsset.id);
+
+      return NextResponse.json({
+        success: true,
+        url: uploadResponse.secure_url,
+        publicId: uploadResponse.public_id,
+        mediaAsset: {
+          id: mediaAsset.id,
+          url: mediaAsset.url,
+          type: mediaAsset.type,
+          altText: mediaAsset.altText,
+          seoTitle: mediaAsset.seoTitle,
+          width: mediaAsset.width,
+          height: mediaAsset.height,
+          createdAt: mediaAsset.createdAt,
+          createdBy: mediaAsset.createdBy,
+        },
+      });
+    } catch (dbError) {
+      console.error("CRITICAL: Database save failed:", dbError);
+      
+      // Try to delete from Cloudinary since DB save failed
+      try {
+        await cloudinary.uploader.destroy(uploadResponse.public_id);
+        console.log("Cleaned up Cloudinary upload after DB failure");
+      } catch (cleanupError) {
+        console.error("Failed to cleanup Cloudinary:", cleanupError);
+      }
+      
+      return NextResponse.json(
+        {
+          error: "Failed to save media to database",
+          details: dbError instanceof Error ? dbError.message : String(dbError),
+        },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
