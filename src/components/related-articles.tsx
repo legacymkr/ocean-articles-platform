@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, User, Tag } from "lucide-react";
 import { formatDateForLanguage } from "@/lib/language";
 import Link from "next/link";
+import { OptimizedImage } from "@/components/optimized-image";
 
 interface RelatedArticle {
   id: string;
@@ -139,9 +140,10 @@ export function RelatedArticles({ currentArticleId, currentArticleTags, language
                     {/* Cover Image */}
                     {article.coverUrl && (
                       <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
-                        <img
+                        <OptimizedImage
                           src={article.coverUrl}
                           alt={displayTitle}
+                          useCase="thumbnail"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
