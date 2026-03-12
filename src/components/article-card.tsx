@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { memo, useMemo } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { calculateReadingTime, formatReadingTime } from "@/lib/reading-time";
 import { Clock } from "lucide-react";
+import { OptimizedImage } from "@/components/optimized-image";
 
 interface ArticleCardProps {
   title: string;
@@ -20,7 +21,7 @@ interface ArticleCardProps {
   className?: string;
 }
 
-export function ArticleCard({
+export const ArticleCard = memo(function ArticleCard({
   title,
   excerpt,
   content,
@@ -32,7 +33,12 @@ export function ArticleCard({
   isTranslated = false,
   className,
 }: ArticleCardProps) {
-  const readingTime = calculateReadingTime(content || excerpt || '');
+  // Memoize reading time calculation as it involves regex and string manipulation
+  const readingTime = useMemo(() =>
+    calculateReadingTime(content || excerpt || ''),
+    [content, excerpt]
+  );
+
   return (
     <Link href={href} className="block">
       <article
@@ -57,9 +63,10 @@ export function ArticleCard({
       {/* Cover Image */}
       {coverUrl && (
         <div className="relative aspect-video overflow-hidden">
-          <img
+          <OptimizedImage
             src={coverUrl}
             alt={title}
+            useCase="card"
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
@@ -127,4 +134,4 @@ export function ArticleCard({
     </article>
     </Link>
   );
-}
+});
