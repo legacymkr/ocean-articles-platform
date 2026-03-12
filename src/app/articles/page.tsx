@@ -9,6 +9,7 @@ import { ScrollReveal } from "@/components/scroll-reveal";
 import { FocusMode } from "@/components/focus-mode";
 import { useNavbar } from "@/components/navbar-provider";
 import { useWebsiteArticles, WebsiteArticle } from "@/contexts/website-articles-context";
+import { ArticleCard } from "@/components/article-card";
 import { formatDate } from "@/lib/date";
 import { Search, Calendar, User, Tag, ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
@@ -173,80 +174,18 @@ export default function ArticlesPage() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredArticles.map((article, index) => (
                   <ScrollReveal key={article.id} delay={400 + index * 100}>
-                    <Card className="glass-card hover:border-primary/50 transition-all duration-300 group">
-                      <CardHeader className="p-0">
-                        {article.coverUrl ? (
-                          <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
-                            <img
-                              src={article.coverUrl}
-                              alt={article.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          </div>
-                        ) : (
-                          <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded-t-lg flex items-center justify-center">
-                            <div className="text-4xl opacity-50">🌊</div>
-                          </div>
-                        )}
-                      </CardHeader>
-                      <CardContent className="p-6">
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">{article.type}</Badge>
-                          </div>
-
-                          <CardTitle className="text-xl font-heading text-glow-primary group-hover:text-primary transition-colors">
-                            {article.title}
-                          </CardTitle>
-
-                          <CardDescription className="line-clamp-3">
-                            {article.excerpt}
-                          </CardDescription>
-
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <User className="h-4 w-4" />
-                              {article.author?.name || 'Author'}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {formatDate(article.publishedAt)}
-                            </div>
-                            {typeof (article as any).readTime === "number" && (
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4" />
-                                {(article as any).readTime} min read
-                              </div>
-                            )}
-                          </div>
-
-                          {article.tags.length > 0 && (
-                            <div className="flex items-center gap-2">
-                              <Tag className="h-4 w-4 text-muted-foreground" />
-                              <div className="flex flex-wrap gap-1">
-                                {article.tags.slice(0, 3).map((tag, tagIndex) => (
-                                  <Badge key={tagIndex} variant="secondary" className="text-xs">
-                                    {tag.tag?.name || 'Unknown Tag'}
-                                  </Badge>
-                                ))}
-                                {article.tags.length > 3 && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    +{article.tags.length - 3}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          <Link href={`/articles/${article.slug}`}>
-                            <Button className="w-full ripple-effect">
-                              Read More
-                              <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
-                          </Link>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <ArticleCard
+                      title={article.title}
+                      slug={article.slug}
+                      excerpt={article.excerpt}
+                      coverUrl={article.coverUrl || undefined}
+                      publishedAt={formatDate(article.publishedAt)}
+                      href={`/articles/${article.slug}`}
+                      tags={article.tags.map(t => ({
+                        id: t.tag?.name || "",
+                        name: t.tag?.name || ""
+                      }))}
+                    />
                   </ScrollReveal>
                 ))}
               </div>

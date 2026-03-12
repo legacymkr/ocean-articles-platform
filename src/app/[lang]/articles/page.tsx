@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ArticleCard } from "@/components/article-card";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +43,6 @@ export default function LocalizedArticlesPage() {
   const lang = params.lang as string;
   
   const [articles, setArticles] = useState<ArticleWithTranslation[]>([]);
-  const [filteredArticles, setFilteredArticles] = useState<ArticleWithTranslation[]>([]);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -71,7 +70,6 @@ export default function LocalizedArticlesPage() {
 
         const articlesData = await articlesResponse.json();
         setArticles(articlesData.articles || []);
-        setFilteredArticles(articlesData.articles || []);
 
         // Tags are optional - don't fail if they don't load
         if (tagsResponse.ok) {
@@ -92,7 +90,7 @@ export default function LocalizedArticlesPage() {
   }, [lang]);
 
   // Filter articles based on search and tag
-  useEffect(() => {
+  const filteredArticles = useMemo(() => {
     let filtered = articles;
 
     // Search filter
@@ -120,8 +118,8 @@ export default function LocalizedArticlesPage() {
       );
     }
 
-    setFilteredArticles(filtered);
-  }, [articles, searchQuery, selectedTag]);
+    return filtered;
+  }, [articles, searchQuery, selectedTag, availableTags]);
 
   if (isLoading) {
     return (

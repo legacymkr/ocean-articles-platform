@@ -8,6 +8,7 @@ import { ArrowDown, Sparkles, Rocket, Zap } from "lucide-react";
 import { NewsletterSignup } from "@/components/newsletter-signup";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { CTABar } from "@/components/cta-bar";
+import { ArticleCard } from "@/components/article-card";
 import { formatDate } from "@/lib/date";
 import { detectLangFromPath, t } from "@/lib/i18n";
 import Link from "next/link";
@@ -244,68 +245,19 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {latestArticles.map((article, index) => (
                 <ScrollReveal key={article.id} delay={200 + index * 100}>
-                  <Card className={`glass-card hover:border-primary/50 transition-all duration-300 group ${
-                    index === 0 ? 'ring-2 ring-primary/50 shadow-lg shadow-primary/20' : ''
-                  }`}>
-                    <CardHeader className="p-0">
-                      {article.coverUrl ? (
-                        <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
-                          <img
-                            src={article.coverUrl}
-                            alt={article.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                      ) : (
-                        <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded-t-lg flex items-center justify-center">
-                          <div className="text-4xl opacity-50">🚀</div>
-                        </div>
-                      )}
-                    </CardHeader>
-                    <CardContent className="p-6">
-                      <div className="space-y-3">
-                        <CardTitle className={`text-xl font-heading group-hover:text-primary transition-colors line-clamp-2 ${
-                          index === 0 ? 'text-primary text-glow-primary' : 'text-glow-primary'
-                        }`}>
-                          {article.title}
-                        </CardTitle>
-
-                        {article.excerpt && (
-                          <CardDescription className="line-clamp-3">
-                            {article.excerpt}
-                          </CardDescription>
-                        )}
-
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <span>{formatDate(article.publishedAt)}</span>
-                          </div>
-                        </div>
-
-                        {article.tags && article.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {article.tags.slice(0, 2).map((tag, tagIndex) => (
-                              <span
-                                key={tagIndex}
-                                className="text-xs px-2 py-1 bg-primary/20 text-primary rounded-full"
-                              >
-                                {tag?.tag?.name || tag?.name || 'Tag'}
-                              </span>
-                            ))}
-                            {article.tags.length > 2 && (
-                              <span className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded-full">
-                                +{article.tags.length - 2}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        <Link href={`${articlesUrl}/${article.slug}`}>
-                          <Button className="w-full ripple-effect">Read More</Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ArticleCard
+                    title={article.title}
+                    slug={article.slug}
+                    excerpt={article.excerpt || ""}
+                    coverUrl={article.coverUrl || undefined}
+                    publishedAt={formatDate(article.publishedAt)}
+                    href={`${articlesUrl}/${article.slug}`}
+                    tags={article.tags.map(t => ({
+                      id: t.tag?.name || t.name || "",
+                      name: t.tag?.name || t.name || ""
+                    }))}
+                    className={index === 0 ? 'ring-2 ring-primary/50 shadow-lg shadow-primary/20' : ''}
+                  />
                 </ScrollReveal>
               ))}
             </div>
