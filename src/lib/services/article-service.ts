@@ -76,12 +76,14 @@ export class ArticleService {
         },
       });
 
-      return tags.map(tag => ({
-        id: tag.id,
-        name: tag.translations[0]?.name || tag.name || 'Unnamed Tag', // Use translation or fallback to original
-        color: tag.color || '#6366f1', // Default color if none set
-        slug: tag.slug,
-      })).filter(tag => tag.name && tag.name !== 'Unnamed Tag'); // Filter out tags without proper names
+      return tags
+        .map((tag) => ({
+          id: tag.id,
+          name: tag.translations[0]?.name || tag.name || "Unnamed Tag", // Use translation or fallback to original
+          color: tag.color || "#6366f1", // Default color if none set
+          slug: tag.slug,
+        }))
+        .filter((tag) => tag.name && tag.name !== "Unnamed Tag"); // Filter out tags without proper names
     } catch (error) {
       console.error("Error fetching translated tags:", error);
       return [];
@@ -96,7 +98,8 @@ export class ArticleService {
     }
 
     // Prefer provided slug; otherwise generate from title
-    const baseSlug = data.slug && data.slug.trim().length > 0 ? data.slug : generateSlug(data.title || "untitled");
+    const baseSlug =
+      data.slug && data.slug.trim().length > 0 ? data.slug : generateSlug(data.title || "untitled");
 
     // Get existing slugs for this language
     const existingSlugs = await db.article.findMany({
@@ -117,7 +120,8 @@ export class ArticleService {
         content: data.content,
         coverUrl: data.coverUrl,
         status: data.status ?? ArticleStatus.DRAFT,
-        publishedAt: (data.status ?? ArticleStatus.DRAFT) === ArticleStatus.PUBLISHED ? new Date() : undefined,
+        publishedAt:
+          (data.status ?? ArticleStatus.DRAFT) === ArticleStatus.PUBLISHED ? new Date() : undefined,
         metaTitle: data.metaTitle,
         metaDescription: data.metaDescription,
         keywords: data.keywords,
@@ -411,7 +415,7 @@ export class ArticleService {
 
     // Extract tags and tagIds from data to handle separately
     const { tags, tagIds, ...restData } = data as any;
-    
+
     const updateData: Partial<{
       title: string;
       excerpt: string;
@@ -543,10 +547,10 @@ export class ArticleService {
 
       // Trigger sitemap regeneration
       try {
-        const { SitemapService } = await import('./sitemap-service');
+        const { SitemapService } = await import("./sitemap-service");
         await SitemapService.regenerateSitemaps();
       } catch (sitemapError) {
-        console.warn('Failed to regenerate sitemaps:', sitemapError);
+        console.warn("Failed to regenerate sitemaps:", sitemapError);
         // Don't fail the publish if sitemap generation fails
       }
 
@@ -701,32 +705,39 @@ export class ArticleService {
     });
     const languageCode = language?.code || "en";
 
+    // Batch fetch all required tag translations to avoid N+1 queries
+    // This reduces database queries from N (number of articles) to 1 for tag translations
+    const allTagIds = Array.from(
+      new Set(articles.flatMap((article) => article.tags.map((at) => at.tag.id))),
+    ) as string[];
+    const allTranslatedTags = await this.getTranslatedTags(allTagIds, languageCode);
+    const tagMap = new Map(allTranslatedTags.map((tag) => [tag.id, tag]));
+
     // Process articles to use translation data if available
-    const processedArticles = await Promise.all(
-      articles.map(async (article) => {
-        const translation = article.translations[0];
-        const base = translation
-          ? {
-              ...article,
-              title: translation.title,
-              excerpt: translation.excerpt,
-              metaTitle: translation.metaTitle,
-              metaDescription: translation.metaDescription,
-              keywords: translation.keywords,
-            }
-          : article;
+    const processedArticles = articles.map((article) => {
+      const translation = article.translations[0];
+      const base = translation
+        ? {
+            ...article,
+            title: translation.title,
+            excerpt: translation.excerpt,
+            metaTitle: translation.metaTitle,
+            metaDescription: translation.metaDescription,
+            keywords: translation.keywords,
+          }
+        : article;
 
-        // Get translated tags for this language
-        const tagIds = article.tags.map((at) => at.tag.id);
-        const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
+      // Get translated tags from the batch-fetched map
+      const translatedTags = article.tags
+        .map((at) => tagMap.get(at.tag.id))
+        .filter((tag): tag is NonNullable<typeof tag> => !!tag);
 
-        return {
-          ...base,
-          tags: translatedTags,
-          readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
-        } as any;
-      })
-    );
+      return {
+        ...base,
+        tags: translatedTags,
+        readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
+      } as any;
+    });
 
     return {
       articles: processedArticles,
@@ -871,35 +882,42 @@ export class ArticleService {
       };
     }
 
-      // Process articles to include translation data and translated tags
-      const processedArticles = await Promise.all(
-        articles.map(async (article) => {
-          const translation = article.translations[0];
-          
-          // Use translation data if available, otherwise use original
-          const finalTitle = translation?.title || article.title;
-          const finalExcerpt = translation?.excerpt || article.excerpt;
-          const finalContent = translation?.content || article.content;
-          
-          // Get translated tags for this language
-          const tagIds = article.tags.map((at) => at.tag.id);
-          const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
-          
-          return {
-            id: article.id,
-            title: finalTitle,
-            slug: article.slug,
-            excerpt: finalExcerpt || "",
-            content: finalContent || "",
-            coverUrl: article.coverUrl,
-            status: article.status,
-            publishedAt: article.publishedAt?.toISOString() || new Date().toISOString(),
-            author: article.author,
-            tags: translatedTags,
-            readTime: this.computeReadTimeFromHtml(finalContent || undefined),
-          };
-        })
-      );
+    // Batch fetch all required tag translations to avoid N+1 queries
+    // This reduces database queries from N (number of articles) to 1 for tag translations
+    const allTagIds = Array.from(
+      new Set(articles.flatMap((article) => article.tags.map((at) => at.tag.id))),
+    ) as string[];
+    const allTranslatedTags = await this.getTranslatedTags(allTagIds, languageCode);
+    const tagMap = new Map(allTranslatedTags.map((tag) => [tag.id, tag]));
+
+    // Process articles to include translation data and translated tags
+    const processedArticles = articles.map((article) => {
+      const translation = article.translations[0];
+
+      // Use translation data if available, otherwise use original
+      const finalTitle = translation?.title || article.title;
+      const finalExcerpt = translation?.excerpt || article.excerpt;
+      const finalContent = translation?.content || article.content;
+
+      // Get translated tags from the batch-fetched map
+      const translatedTags = article.tags
+        .map((at) => tagMap.get(at.tag.id))
+        .filter((tag): tag is NonNullable<typeof tag> => !!tag);
+
+      return {
+        id: article.id,
+        title: finalTitle,
+        slug: article.slug,
+        excerpt: finalExcerpt || "",
+        content: finalContent || "",
+        coverUrl: article.coverUrl,
+        status: article.status,
+        publishedAt: article.publishedAt?.toISOString() || new Date().toISOString(),
+        author: article.author,
+        tags: translatedTags,
+        readTime: this.computeReadTimeFromHtml(finalContent || undefined),
+      };
+    });
 
     return {
       articles: processedArticles,
