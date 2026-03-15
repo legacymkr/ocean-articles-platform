@@ -87,6 +87,7 @@ export class ArticleService {
       return [];
     }
   }
+
   /**
    * Create a new article
    */
@@ -318,7 +319,13 @@ export class ArticleService {
           originalLanguage: true,
           tags: {
             include: {
-              tag: true,
+              tag: {
+                include: {
+                  translations: {
+                    where: { languageCode },
+                  },
+                },
+              },
             },
           },
           translations: {
@@ -348,8 +355,18 @@ export class ArticleService {
             keywords: translation.keywords,
           }
         : article;
+
+      // Extract translated tags from the nested Prisma result
+      const articleTranslatedTags = article.tags.map((at) => ({
+        id: at.tag.id,
+        name: at.tag.translations[0]?.name || at.tag.name || "Unnamed Tag",
+        color: at.tag.color || "#6366f1",
+        slug: at.tag.slug,
+      })).filter(tag => tag.name && tag.name !== "Unnamed Tag");
+
       return {
         ...base,
+        tags: articleTranslatedTags,
         readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
       } as any;
     });
@@ -670,6 +687,12 @@ export class ArticleService {
       where.status = status.toUpperCase() as "DRAFT" | "PUBLISHED";
     }
 
+    // Get language code for tag translations
+    const language = await db.language.findUnique({
+      where: { id: languageId },
+    });
+    const languageCode = language?.code || "en";
+
     const [articles, total] = await Promise.all([
       db.article.findMany({
         where,
@@ -681,7 +704,13 @@ export class ArticleService {
           originalLanguage: true,
           tags: {
             include: {
-              tag: true,
+              tag: {
+                include: {
+                  translations: {
+                    where: { languageCode },
+                  },
+                },
+              },
             },
           },
           translations: {
@@ -695,38 +724,34 @@ export class ArticleService {
       db.article.count({ where }),
     ]);
 
-    // Get language code for tag translations
-    const language = await db.language.findUnique({
-      where: { id: languageId },
-    });
-    const languageCode = language?.code || "en";
-
     // Process articles to use translation data if available
-    const processedArticles = await Promise.all(
-      articles.map(async (article) => {
-        const translation = article.translations[0];
-        const base = translation
-          ? {
-              ...article,
-              title: translation.title,
-              excerpt: translation.excerpt,
-              metaTitle: translation.metaTitle,
-              metaDescription: translation.metaDescription,
-              keywords: translation.keywords,
-            }
-          : article;
+    const processedArticles = articles.map((article) => {
+      const translation = article.translations[0];
+      const base = translation
+        ? {
+            ...article,
+            title: translation.title,
+            excerpt: translation.excerpt,
+            metaTitle: translation.metaTitle,
+            metaDescription: translation.metaDescription,
+            keywords: translation.keywords,
+          }
+        : article;
 
-        // Get translated tags for this language
-        const tagIds = article.tags.map((at) => at.tag.id);
-        const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
+      // Extract translated tags from the nested Prisma result
+      const articleTranslatedTags = article.tags.map((at) => ({
+        id: at.tag.id,
+        name: at.tag.translations[0]?.name || at.tag.name || "Unnamed Tag",
+        color: at.tag.color || "#6366f1",
+        slug: at.tag.slug,
+      })).filter(tag => tag.name && tag.name !== "Unnamed Tag");
 
-        return {
-          ...base,
-          tags: translatedTags,
-          readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
-        } as any;
-      })
-    );
+      return {
+        ...base,
+        tags: articleTranslatedTags,
+        readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
+      } as any;
+    });
 
     return {
       articles: processedArticles,
@@ -837,7 +862,13 @@ export class ArticleService {
             originalLanguage: true,
             tags: {
               include: {
-                tag: true,
+                tag: {
+                  include: {
+                    translations: {
+                      where: { languageCode },
+                    },
+                  },
+                },
               },
             },
             translations: {
@@ -872,34 +903,36 @@ export class ArticleService {
     }
 
       // Process articles to include translation data and translated tags
-      const processedArticles = await Promise.all(
-        articles.map(async (article) => {
-          const translation = article.translations[0];
-          
-          // Use translation data if available, otherwise use original
-          const finalTitle = translation?.title || article.title;
-          const finalExcerpt = translation?.excerpt || article.excerpt;
-          const finalContent = translation?.content || article.content;
-          
-          // Get translated tags for this language
-          const tagIds = article.tags.map((at) => at.tag.id);
-          const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
-          
-          return {
-            id: article.id,
-            title: finalTitle,
-            slug: article.slug,
-            excerpt: finalExcerpt || "",
-            content: finalContent || "",
-            coverUrl: article.coverUrl,
-            status: article.status,
-            publishedAt: article.publishedAt?.toISOString() || new Date().toISOString(),
-            author: article.author,
-            tags: translatedTags,
-            readTime: this.computeReadTimeFromHtml(finalContent || undefined),
-          };
-        })
-      );
+      const processedArticles = articles.map((article) => {
+        const translation = article.translations[0];
+
+        // Use translation data if available, otherwise use original
+        const finalTitle = translation?.title || article.title;
+        const finalExcerpt = translation?.excerpt || article.excerpt;
+        const finalContent = translation?.content || article.content;
+
+        // Extract translated tags from the nested Prisma result
+        const articleTranslatedTags = article.tags.map((at) => ({
+          id: at.tag.id,
+          name: at.tag.translations[0]?.name || at.tag.name || "Unnamed Tag",
+          color: at.tag.color || "#6366f1",
+          slug: at.tag.slug,
+        })).filter(tag => tag.name && tag.name !== "Unnamed Tag");
+
+        return {
+          id: article.id,
+          title: finalTitle,
+          slug: article.slug,
+          excerpt: finalExcerpt || "",
+          content: finalContent || "",
+          coverUrl: article.coverUrl,
+          status: article.status,
+          publishedAt: article.publishedAt?.toISOString() || new Date().toISOString(),
+          author: article.author,
+          tags: articleTranslatedTags,
+          readTime: this.computeReadTimeFromHtml(finalContent || undefined),
+        };
+      });
 
     return {
       articles: processedArticles,
