@@ -11,6 +11,7 @@ import { CTABar } from "@/components/cta-bar";
 import { formatDate } from "@/lib/date";
 import { detectLangFromPath, t } from "@/lib/i18n";
 import Link from "next/link";
+import { OptimizedImage } from "@/components/optimized-image";
 
 interface Article {
   id: string;
@@ -250,10 +251,11 @@ export default function Home() {
                     <CardHeader className="p-0">
                       {article.coverUrl ? (
                         <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
-                          <img
+                          <OptimizedImage
                             src={article.coverUrl}
                             alt={article.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            useCase="card"
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
                         </div>
                       ) : (
