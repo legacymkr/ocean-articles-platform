@@ -63,6 +63,24 @@ export class ArticleService {
   /**
    * Get translated tag names for a given language with fallback to original names
    */
+  private static formatTags(articleTags: any[], languageCode: string) {
+    if (!articleTags || !articleTags.length) return [];
+
+    return articleTags
+      .map((at) => {
+        const tag = at.tag;
+        if (!tag) return null;
+
+        return {
+          id: tag.id,
+          name: tag.translations?.[0]?.name || tag.name || "Unnamed Tag",
+          color: tag.color || "#6366f1",
+          slug: tag.slug,
+        };
+      })
+      .filter((tag): tag is NonNullable<typeof tag> => !!tag && tag.name !== "Unnamed Tag");
+  }
+
   private static async getTranslatedTags(tagIds: string[], languageCode: string) {
     if (!db || !tagIds.length) return [];
 
@@ -166,18 +184,25 @@ export class ArticleService {
     }
 
     // Try to find the article in the requested language
-    let article = await db.article.findFirst({
+    let article = await (db.article.findFirst as any)({
       where: {
         slug,
         originalLanguageId: language.id,
         status: ArticleStatus.PUBLISHED,
       },
+      relationLoad: "join",
       include: {
         author: true,
         originalLanguage: true,
         tags: {
           include: {
-            tag: true,
+            tag: {
+              include: {
+                translations: {
+                  where: { languageCode },
+                },
+              },
+            },
           },
         },
       },
@@ -185,12 +210,13 @@ export class ArticleService {
 
     // If not found, try to find a translation
     if (!article) {
-      const translation = await db.articleTranslation.findFirst({
+      const translation = await (db.articleTranslation.findFirst as any)({
         where: {
           slug,
           languageId: language.id,
           status: ArticleStatus.PUBLISHED,
         },
+        relationLoad: "join",
         include: {
           article: {
             include: {
@@ -198,7 +224,13 @@ export class ArticleService {
               originalLanguage: true,
               tags: {
                 include: {
-                  tag: true,
+                  tag: {
+                    include: {
+                      translations: {
+                        where: { languageCode },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -224,9 +256,8 @@ export class ArticleService {
 
     if (!article) return null as any;
 
-    // Get translated tags for this language
-    const tagIds = (article as any).tags.map((at: any) => at.tag.id);
-    const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
+    // Synchronously format tags from pre-fetched data
+    const translatedTags = this.formatTags((article as any).tags, languageCode);
 
     return {
       ...article,
@@ -308,17 +339,24 @@ export class ArticleService {
     }
 
     const [articles, total] = await Promise.all([
-      db.article.findMany({
+      (db.article.findMany as any)({
         where,
         skip,
         take: limit,
         orderBy: { publishedAt: "desc" },
+        relationLoad: "join",
         include: {
           author: true,
           originalLanguage: true,
           tags: {
             include: {
-              tag: true,
+              tag: {
+                include: {
+                  translations: {
+                    where: { languageCode },
+                  },
+                },
+              },
             },
           },
           translations: {
@@ -336,8 +374,9 @@ export class ArticleService {
     ]);
 
     // Process articles to use translation data if available
-    const processedArticles = articles.map((article) => {
+    const processedArticles = (articles as any[]).map((article) => {
       const translation = article.translations[0];
+      const translatedTags = this.formatTags(article.tags, languageCode);
       const base = translation
         ? {
             ...article,
@@ -350,6 +389,7 @@ export class ArticleService {
         : article;
       return {
         ...base,
+        tags: translatedTags,
         readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
       } as any;
     });
@@ -569,14 +609,30 @@ export class ArticleService {
       return null;
     }
 
-    const article = await db.article.findUnique({
+    // Get language code for tag translations
+    let languageCode = "en";
+    if (languageId) {
+      const language = await db.language.findUnique({
+        where: { id: languageId },
+      });
+      languageCode = language?.code || "en";
+    }
+
+    const article = await (db.article.findUnique as any)({
       where: { id: articleId },
+      relationLoad: "join",
       include: {
         author: true,
         originalLanguage: true,
         tags: {
           include: {
-            tag: true,
+            tag: {
+              include: {
+                translations: {
+                  where: { languageCode },
+                },
+              },
+            },
           },
         },
         translations: languageId
@@ -598,18 +654,8 @@ export class ArticleService {
       return null;
     }
 
-    // Get language code for tag translations
-    let languageCode = "en";
-    if (languageId) {
-      const language = await db.language.findUnique({
-        where: { id: languageId },
-      });
-      languageCode = language?.code || "en";
-    }
-
-    // Get translated tags for this language
-    const tagIds = article.tags.map((at) => at.tag.id);
-    const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
+    // Synchronously format tags from pre-fetched data
+    const translatedTags = this.formatTags(article.tags, languageCode);
 
     // If a specific language is requested and there's a translation, use it
     if (languageId && article.translations.length > 0) {
@@ -670,18 +716,31 @@ export class ArticleService {
       where.status = status.toUpperCase() as "DRAFT" | "PUBLISHED";
     }
 
+    // Get language code for tag translations
+    const language = await db.language.findUnique({
+      where: { id: languageId },
+    });
+    const languageCode = language?.code || "en";
+
     const [articles, total] = await Promise.all([
-      db.article.findMany({
+      (db.article.findMany as any)({
         where,
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
+        relationLoad: "join",
         include: {
           author: true,
           originalLanguage: true,
           tags: {
             include: {
-              tag: true,
+              tag: {
+                include: {
+                  translations: {
+                    where: { languageCode },
+                  },
+                },
+              },
             },
           },
           translations: {
@@ -695,38 +754,27 @@ export class ArticleService {
       db.article.count({ where }),
     ]);
 
-    // Get language code for tag translations
-    const language = await db.language.findUnique({
-      where: { id: languageId },
-    });
-    const languageCode = language?.code || "en";
-
     // Process articles to use translation data if available
-    const processedArticles = await Promise.all(
-      articles.map(async (article) => {
-        const translation = article.translations[0];
-        const base = translation
-          ? {
-              ...article,
-              title: translation.title,
-              excerpt: translation.excerpt,
-              metaTitle: translation.metaTitle,
-              metaDescription: translation.metaDescription,
-              keywords: translation.keywords,
-            }
-          : article;
+    const processedArticles = (articles as any[]).map((article) => {
+      const translation = article.translations[0];
+      const translatedTags = this.formatTags(article.tags, languageCode);
+      const base = translation
+        ? {
+            ...article,
+            title: translation.title,
+            excerpt: translation.excerpt,
+            metaTitle: translation.metaTitle,
+            metaDescription: translation.metaDescription,
+            keywords: translation.keywords,
+          }
+        : article;
 
-        // Get translated tags for this language
-        const tagIds = article.tags.map((at) => at.tag.id);
-        const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
-
-        return {
-          ...base,
-          tags: translatedTags,
-          readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
-        } as any;
-      })
-    );
+      return {
+        ...base,
+        tags: translatedTags,
+        readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
+      } as any;
+    });
 
     return {
       articles: processedArticles,
@@ -827,17 +875,24 @@ export class ArticleService {
     const [articles, total] = await DatabaseWrapper.queryAll([
       () => {
         if (!db) throw new Error("Database not available");
-        return db.article.findMany({
+        return (db.article.findMany as any)({
           where,
           skip,
           take: limit,
           orderBy: { publishedAt: "desc" },
+          relationLoad: "join",
           include: {
             author: { select: { id: true, name: true } },
             originalLanguage: true,
             tags: {
               include: {
-                tag: true,
+                tag: {
+                  include: {
+                    translations: {
+                      where: { languageCode },
+                    },
+                  },
+                },
               },
             },
             translations: {
@@ -871,35 +926,32 @@ export class ArticleService {
       };
     }
 
-      // Process articles to include translation data and translated tags
-      const processedArticles = await Promise.all(
-        articles.map(async (article) => {
-          const translation = article.translations[0];
-          
-          // Use translation data if available, otherwise use original
-          const finalTitle = translation?.title || article.title;
-          const finalExcerpt = translation?.excerpt || article.excerpt;
-          const finalContent = translation?.content || article.content;
-          
-          // Get translated tags for this language
-          const tagIds = article.tags.map((at) => at.tag.id);
-          const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
-          
-          return {
-            id: article.id,
-            title: finalTitle,
-            slug: article.slug,
-            excerpt: finalExcerpt || "",
-            content: finalContent || "",
-            coverUrl: article.coverUrl,
-            status: article.status,
-            publishedAt: article.publishedAt?.toISOString() || new Date().toISOString(),
-            author: article.author,
-            tags: translatedTags,
-            readTime: this.computeReadTimeFromHtml(finalContent || undefined),
-          };
-        })
-      );
+    // Process articles to include translation data and translated tags
+    const processedArticles = (articles as any[]).map((article) => {
+      const translation = article.translations[0];
+
+      // Use translation data if available, otherwise use original
+      const finalTitle = translation?.title || article.title;
+      const finalExcerpt = translation?.excerpt || article.excerpt;
+      const finalContent = translation?.content || article.content;
+
+      // Synchronously format tags from pre-fetched data
+      const translatedTags = this.formatTags(article.tags, languageCode);
+
+      return {
+        id: article.id,
+        title: finalTitle,
+        slug: article.slug,
+        excerpt: finalExcerpt || "",
+        content: finalContent || "",
+        coverUrl: article.coverUrl,
+        status: article.status,
+        publishedAt: article.publishedAt?.toISOString() || new Date().toISOString(),
+        author: article.author,
+        tags: translatedTags,
+        readTime: this.computeReadTimeFromHtml(finalContent || undefined),
+      };
+    });
 
     return {
       articles: processedArticles,
