@@ -87,6 +87,27 @@ export class ArticleService {
       return [];
     }
   }
+
+  /**
+   * Synchronously format pre-fetched tags with translations
+   */
+  private static formatTranslatedTags(articleTags: any[], languageCode: string) {
+    if (!articleTags || !articleTags.length) return [];
+
+    return articleTags
+      .map((at) => {
+        const tag = at.tag;
+        if (!tag) return null;
+
+        return {
+          id: tag.id,
+          name: tag.translations?.[0]?.name || tag.name || "Unnamed Tag", // Use translation or fallback to original
+          color: tag.color || "#6366f1", // Default color if none set
+          slug: tag.slug,
+        };
+      })
+      .filter((tag): tag is NonNullable<typeof tag> => !!tag && !!tag.name && tag.name !== "Unnamed Tag");
+  }
   /**
    * Create a new article
    */
@@ -177,7 +198,13 @@ export class ArticleService {
         originalLanguage: true,
         tags: {
           include: {
-            tag: true,
+                    tag: {
+                      include: {
+                        translations: {
+                          where: { languageCode },
+                        },
+                      },
+                    },
           },
         },
       },
@@ -198,7 +225,13 @@ export class ArticleService {
               originalLanguage: true,
               tags: {
                 include: {
-                  tag: true,
+                  tag: {
+                    include: {
+                      translations: {
+                        where: { languageCode },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -224,13 +257,9 @@ export class ArticleService {
 
     if (!article) return null as any;
 
-    // Get translated tags for this language
-    const tagIds = (article as any).tags.map((at: any) => at.tag.id);
-    const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
-
     return {
       ...article,
-      tags: translatedTags,
+      tags: this.formatTranslatedTags((article as any).tags, languageCode),
       readTime: ArticleService.computeReadTimeFromHtml((article as any).content),
     } as any;
   }
@@ -318,7 +347,13 @@ export class ArticleService {
           originalLanguage: true,
           tags: {
             include: {
-              tag: true,
+              tag: {
+                include: {
+                  translations: {
+                    where: { languageCode },
+                  },
+                },
+              },
             },
           },
           translations: {
@@ -350,6 +385,7 @@ export class ArticleService {
         : article;
       return {
         ...base,
+        tags: this.formatTranslatedTags(article.tags, languageCode),
         readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
       } as any;
     });
@@ -569,6 +605,15 @@ export class ArticleService {
       return null;
     }
 
+    // Get language code for tag translations
+    let languageCode = "en";
+    if (languageId) {
+      const language = await db.language.findUnique({
+        where: { id: languageId },
+      });
+      languageCode = language?.code || "en";
+    }
+
     const article = await db.article.findUnique({
       where: { id: articleId },
       include: {
@@ -576,7 +621,13 @@ export class ArticleService {
         originalLanguage: true,
         tags: {
           include: {
-            tag: true,
+            tag: {
+              include: {
+                translations: {
+                  where: { languageCode },
+                },
+              },
+            },
           },
         },
         translations: languageId
@@ -598,19 +649,6 @@ export class ArticleService {
       return null;
     }
 
-    // Get language code for tag translations
-    let languageCode = "en";
-    if (languageId) {
-      const language = await db.language.findUnique({
-        where: { id: languageId },
-      });
-      languageCode = language?.code || "en";
-    }
-
-    // Get translated tags for this language
-    const tagIds = article.tags.map((at) => at.tag.id);
-    const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
-
     // If a specific language is requested and there's a translation, use it
     if (languageId && article.translations.length > 0) {
       const translation = article.translations[0];
@@ -622,13 +660,13 @@ export class ArticleService {
         metaTitle: translation.metaTitle,
         metaDescription: translation.metaDescription,
         keywords: translation.keywords,
-        tags: translatedTags,
+        tags: this.formatTranslatedTags(article.tags, languageCode),
         readTime: ArticleService.computeReadTimeFromHtml(translation.content || undefined),
       } as any;
     }
     return {
       ...article,
-      tags: translatedTags,
+      tags: this.formatTranslatedTags(article.tags, languageCode),
       readTime: ArticleService.computeReadTimeFromHtml(article.content || undefined),
     } as any;
   }
@@ -670,6 +708,12 @@ export class ArticleService {
       where.status = status.toUpperCase() as "DRAFT" | "PUBLISHED";
     }
 
+    // Get language code for tag translations
+    const language = await db.language.findUnique({
+      where: { id: languageId },
+    });
+    const languageCode = language?.code || "en";
+
     const [articles, total] = await Promise.all([
       db.article.findMany({
         where,
@@ -681,7 +725,13 @@ export class ArticleService {
           originalLanguage: true,
           tags: {
             include: {
-              tag: true,
+              tag: {
+                include: {
+                  translations: {
+                    where: { languageCode },
+                  },
+                },
+              },
             },
           },
           translations: {
@@ -695,38 +745,26 @@ export class ArticleService {
       db.article.count({ where }),
     ]);
 
-    // Get language code for tag translations
-    const language = await db.language.findUnique({
-      where: { id: languageId },
-    });
-    const languageCode = language?.code || "en";
-
     // Process articles to use translation data if available
-    const processedArticles = await Promise.all(
-      articles.map(async (article) => {
-        const translation = article.translations[0];
-        const base = translation
-          ? {
-              ...article,
-              title: translation.title,
-              excerpt: translation.excerpt,
-              metaTitle: translation.metaTitle,
-              metaDescription: translation.metaDescription,
-              keywords: translation.keywords,
-            }
-          : article;
+    const processedArticles = articles.map((article) => {
+      const translation = article.translations[0];
+      const base = translation
+        ? {
+            ...article,
+            title: translation.title,
+            excerpt: translation.excerpt,
+            metaTitle: translation.metaTitle,
+            metaDescription: translation.metaDescription,
+            keywords: translation.keywords,
+          }
+        : article;
 
-        // Get translated tags for this language
-        const tagIds = article.tags.map((at) => at.tag.id);
-        const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
-
-        return {
-          ...base,
-          tags: translatedTags,
-          readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
-        } as any;
-      })
-    );
+      return {
+        ...base,
+        tags: this.formatTranslatedTags(article.tags, languageCode),
+        readTime: ArticleService.computeReadTimeFromHtml((base as any).content),
+      } as any;
+    });
 
     return {
       articles: processedArticles,
@@ -837,7 +875,13 @@ export class ArticleService {
             originalLanguage: true,
             tags: {
               include: {
-                tag: true,
+                tag: {
+                  include: {
+                    translations: {
+                      where: { languageCode },
+                    },
+                  },
+                },
               },
             },
             translations: {
@@ -872,34 +916,28 @@ export class ArticleService {
     }
 
       // Process articles to include translation data and translated tags
-      const processedArticles = await Promise.all(
-        articles.map(async (article) => {
-          const translation = article.translations[0];
-          
-          // Use translation data if available, otherwise use original
-          const finalTitle = translation?.title || article.title;
-          const finalExcerpt = translation?.excerpt || article.excerpt;
-          const finalContent = translation?.content || article.content;
-          
-          // Get translated tags for this language
-          const tagIds = article.tags.map((at) => at.tag.id);
-          const translatedTags = await this.getTranslatedTags(tagIds, languageCode);
-          
-          return {
-            id: article.id,
-            title: finalTitle,
-            slug: article.slug,
-            excerpt: finalExcerpt || "",
-            content: finalContent || "",
-            coverUrl: article.coverUrl,
-            status: article.status,
-            publishedAt: article.publishedAt?.toISOString() || new Date().toISOString(),
-            author: article.author,
-            tags: translatedTags,
-            readTime: this.computeReadTimeFromHtml(finalContent || undefined),
-          };
-        })
-      );
+      const processedArticles = articles.map((article) => {
+        const translation = article.translations[0];
+
+        // Use translation data if available, otherwise use original
+        const finalTitle = translation?.title || article.title;
+        const finalExcerpt = translation?.excerpt || article.excerpt;
+        const finalContent = translation?.content || article.content;
+
+        return {
+          id: article.id,
+          title: finalTitle,
+          slug: article.slug,
+          excerpt: finalExcerpt || "",
+          content: finalContent || "",
+          coverUrl: article.coverUrl,
+          status: article.status,
+          publishedAt: article.publishedAt?.toISOString() || new Date().toISOString(),
+          author: article.author,
+          tags: this.formatTranslatedTags(article.tags, languageCode),
+          readTime: this.computeReadTimeFromHtml(finalContent || undefined),
+        };
+      });
 
     return {
       articles: processedArticles,
