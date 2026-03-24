@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowDown, Sparkles, Rocket, Zap } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { CTABar } from "@/components/cta-bar";
+import { OptimizedImage } from "@/components/optimized-image";
 import { formatDate } from "@/lib/date";
 import { t, type SupportedLang } from "@/lib/i18n";
 import Link from "next/link";
@@ -210,10 +211,11 @@ export default function LanguageHome() {
                   }`}>
                     <CardHeader className="p-0">
                       {article.coverUrl ? (
-                        <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
-                          <img
+                        <div className="aspect-video bg-muted rounded-t-lg overflow-hidden relative">
+                          <OptimizedImage
                             src={article.coverUrl}
                             alt={article.title}
+                            useCase="card"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>

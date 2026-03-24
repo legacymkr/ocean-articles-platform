@@ -10,6 +10,7 @@ import { FocusMode } from "@/components/focus-mode";
 import { useNavbar } from "@/components/navbar-provider";
 import { useWebsiteArticles, WebsiteArticle } from "@/contexts/website-articles-context";
 import { formatDate } from "@/lib/date";
+import { OptimizedImage } from "@/components/optimized-image";
 import { Search, Calendar, User, Tag, ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -176,10 +177,11 @@ export default function ArticlesPage() {
                     <Card className="glass-card hover:border-primary/50 transition-all duration-300 group">
                       <CardHeader className="p-0">
                         {article.coverUrl ? (
-                          <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
-                            <img
+                          <div className="aspect-video bg-muted rounded-t-lg overflow-hidden relative">
+                            <OptimizedImage
                               src={article.coverUrl}
                               alt={article.title}
+                              useCase="card"
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
